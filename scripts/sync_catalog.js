@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import * as xlsx from 'xlsx';
+import xlsx from 'xlsx';
 import path from 'path';
 import { fileURLToPath } from 'url';
 

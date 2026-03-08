@@ -18,7 +18,7 @@ if (!supabaseUrl || !supabaseKey || !geminiApiKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 const genAI = new GoogleGenerativeAI(geminiApiKey);
-const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
 
 function chunkText(text, chunkSize = 1000, overlap = 100) {
   const chunks = [];
