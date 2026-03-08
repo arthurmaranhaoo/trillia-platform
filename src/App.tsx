@@ -856,8 +856,8 @@ const BruceAssistant = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
       // 2. Perform similarity search in Supabase vector store
       const { data: documents, error } = await supabase.rpc('match_documents', {
         query_embedding: queryEmbedding,
-        match_threshold: 0.5, // Return documents with at least 50% similarity
-        match_count: 10 // Increase to top 10 matches for broader context
+        match_threshold: 0.3, // Lowered threshold to ensure broad queries pull in as many products as possible
+        match_count: 150 // Drastically increased to capture the entire catalog if needed (up to 150 items)
       });
 
       if (error) {
@@ -865,10 +865,12 @@ const BruceAssistant = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
       }
 
       // 3. Compile context from matched documents
-      let contextString = "Contexto encontrado nos documentos da base de conhecimento (Note que este é apenas um recorte semântico dos produtos mais relevantes, a base possui dezenas de outros produtos):\n";
+      let contextString = "Contexto encontrado nos documentos da base de conhecimento (Este recinto semântico traz até 150 produtos relevantes buscados no banco de dados para responder):\n";
+      let actualCount = 0;
       if (documents && documents.length > 0) {
         documents.forEach((doc: any, i: number) => {
           contextString += `\n[Documento ${i + 1} - Origem: ${doc.metadata?.source || 'Desconhecida'}]:\n${doc.content}\n`;
+          actualCount++;
         });
       } else {
         contextString += "Não encontrei documentos específicos no catálogo sobre este tópico, tentarei responder com base no que sei.";
@@ -884,7 +886,8 @@ Seu objetivo é:
 3. Tirar dúvidas dos usuários sobre a metodologia H3, horizontes de inovação e governança.
 
 INSTRUÇÃO CRÍTICA SOBRE O TAMANHO DO PORTFÓLIO: 
-O portfólio atual da Trillia possui 50 produtos cadastrados no total. O contexto injetado abaixo contém APENAS os 10 produtos mais relevantes recuperados pela busca semântica para responder à pergunta atual. NUNCA diga que o portfólio tem apenas "5 produtos" ou "10 produtos". Se perguntarem quantos produtos existem, a verdadeira resposta é 50 produtos (e isso cresce em tempo real através da planilha unificada).
+O contexto injetado abaixo foi trazido diretamente de uma base de dados que é sincronizada em tempo real com uma planilha. Para esta sua resposta, o banco de dados filtrou e trouxe para você a íntegra de ${actualCount} documentos de produtos relacionados de alguma forma à pergunta do usuário. 
+Se o usuário perguntar QUANTOS produtos existem NO TOTAL ou listar produtos, você DEVE contar e confirmar baseando-se que a base atualizou e trouxe ${actualCount} registros. NUNCA diga que o portfólio tem números antigos (como "3 produtos" ou "5 produtos") se o contexto agora lista dezenas.
 
 Sempre que o usuário pedir uma comparação entre produtos, você DEVE obrigatoriamente utilizar uma tabela Markdown para facilitar a visualização.
 A tabela deve conter as seguintes colunas:
