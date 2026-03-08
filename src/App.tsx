@@ -314,6 +314,11 @@ const CatalogView = () => {
             bu: item.metadata?.bu || (item.category || 'Geral'),
             mercado: item.metadata?.mercado || 'B2B',
             horizonte: item.metadata?.horizonte || 'H1',
+            pricing: item.metadata?.pricing || 'Sob Consulta',
+            problem: item.metadata?.problem || item.description || 'Problema principal',
+            useCases: item.metadata?.useCases || ['Automatização de fluxos', 'Redução de custos', 'Ganho de eficiência'],
+            solutions: item.metadata?.solutions || ['Implementação via API', 'Módulos independentes', 'Plataforma em nuvem'],
+            tech: item.metadata?.tech || ['React', 'Node.js', 'Supabase'],
             price: item.price ? `R$ ${item.price}` : 'Sob Consulta',
             stock: item.stock_status
         }));
@@ -595,14 +600,23 @@ const CatalogView = () => {
                     </div>
                   </div>
 
-                  <div className="px-8 py-5 bg-surface/50 border-t border-ink/5 flex justify-between items-center group/footer">
+                  <div 
+                    onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); }}
+                    className="px-8 py-5 bg-surface/50 border-t border-ink/5 flex justify-between items-center group/footer hover:bg-primary/5 transition-colors cursor-pointer"
+                  >
                     <div className="flex items-center gap-3 text-[10px] font-mono font-bold text-ink/30 uppercase tracking-widest group-hover/footer:text-primary transition-colors">
-                      Ver Detalhes <ArrowRight size={14} />
+                      Ver Detalhes <ArrowRight size={14} className="group-hover/footer:translate-x-1 transition-transform" />
                     </div>
                   </div>
                 </>
               ) : (
                 <>
+                  <div className="w-1.5 h-16 rounded-full flex-shrink-0
+                    ${product.tag === 'H3' ? 'bg-accent-green' : 
+                      product.tag === 'H2' ? 'bg-primary' : 
+                      product.tag === 'H1' ? 'bg-ink' : 
+                      'bg-primary/20'}
+                  " />
                   <div className="flex-1 flex items-center gap-12">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-black uppercase tracking-tight group-hover:text-primary transition-colors truncate">{product.title}</h3>
@@ -884,11 +898,16 @@ Regra de Ouro: Baseie suas respostas ESTRITAMENTE no contexto fornecido acima. S
 
       // Build chat history for context
       const chatHistory = messages
-        .filter(m => m.role !== 'system' || m.text.includes('Olá. Sou o Bruce')) // Keep first message and user messages
+        .filter(m => m.role !== 'system' || !m.text.includes('Olá. Sou o Bruce')) // Drop initial strict 'system' greeting
         .map(m => ({
           role: m.role === 'system' ? 'model' : 'user',
           parts: [{ text: m.text }]
         }));
+
+      // Ensure the history array does not start with 'model' which throws First content should be with role 'user', got model
+      if (chatHistory.length > 0 && chatHistory[0].role === 'model') {
+          chatHistory.shift();
+      }
 
       const chat = chatModel.startChat({
         history: chatHistory,
