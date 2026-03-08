@@ -44,6 +44,10 @@ def generate_catalog():
     ]
     
     df = pd.DataFrame(products)
+    
+    import os
+    os.makedirs("../data", exist_ok=True)
+    
     output_path = "../data/catalog.xlsx"
     df.to_excel(output_path, index=False)
     print(f"Mock catalog generated successfully at {output_path}")
