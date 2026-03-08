@@ -4,7 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { createClient } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { 
@@ -29,6 +30,13 @@ import {
   Minimize2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+// --- Supabase Setup ---
+// @ts-ignore
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+// @ts-ignore
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // --- Components ---
 
@@ -281,250 +289,43 @@ const CatalogView = () => {
   const [filters, setFilters] = useState({ bu: 'Todas', mercado: 'Todos', horizonte: 'Todos', squad: 'Todas', responsavel: 'Todos' });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
+  const [products, setProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 12;
 
-  const products = [
-    { 
-      id: 1, 
-      title: 'MARKET INTELLIGENCE HUB', 
-      tag: 'H1', 
-      category: 'S&M e Inteligência de Mercado', 
-      desc: 'Plataforma centralizada de insights de mercado e análise competitiva em tempo real.', 
-      owner: 'Ana Silva', 
-      squad: 'Alpha',
-      revenue: 'R$ 1.2M ARR',
-      bu: 'S&M e Inteligência de Mercado',
-      mercado: 'B2B',
-      horizonte: 'H1',
-      stats: { revenue: 'R$ 1.2M ARR', leads: '450/mês', clients: '15 empresas', bu: 'S&M e Inteligência de Mercado' },
-      problem: 'Dados de mercado dispersos e falta de visão estratégica consolidada.',
-      useCases: ['Análise de concorrência', 'Identificação de tendências'],
-      solutions: ['Web Scraping automatizado', 'Dashboards de BI'],
-      tech: ['Python', 'Selenium', 'PowerBI'],
-      success: 'Empresa Alpha: Redução de 20% no tempo de resposta a movimentos de mercado.',
-      pricing: 'SaaS - R$ 5.000/mês'
-    },
-    { 
-      id: 2, 
-      title: 'PROSPECTOR PRO', 
-      tag: 'H1', 
-      category: 'S&M e Inteligência de Mercado', 
-      desc: 'Ferramenta de geração e qualificação de leads B2B com enriquecimento de dados.', 
-      owner: 'Bruno Costa', 
-      squad: 'Alpha',
-      revenue: 'R$ 2.4M ARR',
-      bu: 'S&M e Inteligência de Mercado',
-      mercado: 'B2B',
-      horizonte: 'H1',
-      stats: { revenue: 'R$ 2.4M ARR', leads: '1.2k/mês', clients: '42 empresas', bu: 'S&M e Inteligência de Mercado' },
-      problem: 'Dificuldade em encontrar leads qualificados e dados de contato atualizados.',
-      useCases: ['Prospecção ativa', 'Enriquecimento de CRM'],
-      solutions: ['Algoritmo de matching', 'API de enriquecimento'],
-      tech: ['Node.js', 'Elasticsearch', 'React'],
-      success: 'Beta Corp: Aumento de 35% na taxa de conversão de leads frios.',
-      pricing: 'SaaS - R$ 8.500/mês'
-    },
-    { 
-      id: 3, 
-      title: 'IDENTITY GUARD AI', 
-      tag: 'H1', 
-      category: 'Loss Prevention', 
-      desc: 'Sistema de verificação de identidade com biometria facial e análise documental.', 
-      owner: 'Carlos Santos', 
-      squad: 'Beta',
-      revenue: 'R$ 4.8M ARR',
-      bu: 'Loss Prevention',
-      mercado: 'B2B',
-      horizonte: 'H1',
-      stats: { revenue: 'R$ 4.8M ARR', leads: '800/mês', clients: '28 bancos', bu: 'Loss Prevention' },
-      problem: 'Fraudes de identidade em processos de onboarding digital.',
-      useCases: ['Abertura de conta digital', 'Validação de transações'],
-      solutions: ['Liveness detection', 'OCR de documentos'],
-      tech: ['Python', 'TensorFlow', 'AWS Rekognition'],
-      success: 'Banco Digital X: Redução de 92% em tentativas de fraude de identidade.',
-      pricing: 'Transacional - R$ 2,50/consulta'
-    },
-    { 
-      id: 4, 
-      title: 'TRANSACTIONAL SHIELD', 
-      tag: 'H1', 
-      category: 'Loss Prevention', 
-      desc: 'Motor de regras e IA para detecção de fraudes em transações financeiras em tempo real.', 
-      owner: 'Daniela Lima', 
-      squad: 'Beta',
-      revenue: 'R$ 7.2M ARR',
-      bu: 'Loss Prevention',
-      mercado: 'B2B',
-      horizonte: 'H1',
-      stats: { revenue: 'R$ 7.2M ARR', leads: '2.5k/mês', clients: '12 adquirentes', bu: 'Loss Prevention' },
-      problem: 'Perdas financeiras elevadas devido a transações fraudulentas não detectadas.',
-      useCases: ['Monitoramento de cartões', 'Prevenção de chargeback'],
-      solutions: ['Motor de regras dinâmico', 'Score de risco em tempo real'],
-      tech: ['Go', 'Redis', 'Kafka'],
-      success: 'Adquirente Y: Economia de R$ 15M em chargebacks no primeiro semestre.',
-      pricing: 'Transacional - 0.1% do volume processado'
-    },
-    { 
-      id: 5, 
-      title: 'CREDIT DECISION ENGINE', 
-      tag: 'H1', 
-      category: 'Crédito e Cobrança', 
-      desc: 'Motor de decisão automatizado para aprovação de crédito com modelos customizáveis.', 
-      owner: 'Eduardo Rocha', 
-      squad: 'Gamma',
-      revenue: 'R$ 3.1M ARR',
-      bu: 'Crédito e Cobrança',
-      mercado: 'B2B',
-      horizonte: 'H1',
-      stats: { revenue: 'R$ 3.1M ARR', leads: '1.5k/mês', clients: '20 financeiras', bu: 'Crédito e Cobrança' },
-      problem: 'Processos de análise de crédito manuais, lentos e inconsistentes.',
-      useCases: ['Aprovação de crédito pessoal', 'Análise de risco PJ'],
-      solutions: ['Workflow de decisão', 'Integração com bureaus'],
-      tech: ['Java', 'Spring Boot', 'PostgreSQL'],
-      success: 'Financeira Z: Redução do tempo de análise de 48h para 3 segundos.',
-      pricing: 'SaaS + Transacional'
-    },
-    { 
-      id: 6, 
-      title: 'RECOVERY OPTIMIZER', 
-      tag: 'H1', 
-      category: 'Crédito e Cobrança', 
-      desc: 'Plataforma de gestão e otimização de cobrança com canais digitais integrados.', 
-      owner: 'Fernanda Oliveira', 
-      squad: 'Gamma',
-      revenue: 'R$ 2.5M ARR',
-      bu: 'Crédito e Cobrança',
-      mercado: 'B2B',
-      horizonte: 'H1',
-      stats: { revenue: 'R$ 2.5M ARR', leads: '3k/mês', clients: '15 assessorias', bu: 'Crédito e Cobrança' },
-      problem: 'Baixa eficiência na recuperação de créditos em atraso.',
-      useCases: ['Régua de cobrança digital', 'Negociação via WhatsApp'],
-      solutions: ['Chatbot de negociação', 'Priorização de carteira'],
-      tech: ['Node.js', 'Twilio', 'MongoDB'],
-      success: 'Assessoria W: Aumento de 22% na recuperação de dívidas de curto prazo.',
-      pricing: 'SaaS - R$ 12.000/mês'
-    },
-    { 
-      id: 7, 
-      title: 'SMART UNDERWRITER', 
-      tag: 'H2', 
-      category: 'Cotação e Subscrição', 
-      desc: 'Sistema de auxílio à subscrição de riscos complexos com análise de dados externos.', 
-      owner: 'Gustavo Lima', 
-      squad: 'Delta',
-      revenue: 'R$ 0.8M ARR',
-      bu: 'Cotação e Subscrição',
-      mercado: 'B2B',
-      horizonte: 'H2',
-      stats: { revenue: 'R$ 0.8M ARR', leads: '150/mês', clients: '5 seguradoras', bu: 'Cotação e Subscrição' },
-      problem: 'Subscrição de riscos complexos baseada em dados limitados e manuais.',
-      useCases: ['Seguro agrícola', 'Seguro de grandes riscos'],
-      solutions: ['Análise de satélite', 'Cruzamento de dados públicos'],
-      tech: ['Python', 'Google Earth Engine', 'Vue.js'],
-      success: 'Seguradora S: Redução de 15% na sinistralidade através de melhor seleção de risco.',
-      pricing: 'SaaS - R$ 15.000/mês'
-    },
-    { 
-      id: 8, 
-      title: 'COLLATERAL REGISTRY AI', 
-      tag: 'H2', 
-      category: 'Negócios e Infraestrutura', 
-      desc: 'Plataforma para registro e avaliação automatizada de garantias reais.', 
-      owner: 'Helena Souza', 
-      squad: 'Delta',
-      revenue: 'R$ 0.5M ARR',
-      bu: 'Negócios e Infraestrutura',
-      mercado: 'B2B',
-      horizonte: 'H2',
-      stats: { revenue: 'R$ 0.5M ARR', leads: '100/mês', clients: '3 bancos', bu: 'Negócios e Infraestrutura' },
-      problem: 'Gestão de garantias reais (imóveis, veículos) ineficiente e sujeita a erros.',
-      useCases: ['Avaliação de imóveis', 'Gestão de gravames'],
-      solutions: ['Avaliação automatizada (AVM)', 'Integração com cartórios'],
-      tech: ['C#', '.NET Core', 'SQL Server'],
-      success: 'Banco B: Redução de 40% no custo operacional de gestão de garantias.',
-      pricing: 'SaaS - R$ 20.000/mês'
-    },
-    { 
-      id: 9, 
-      title: 'MARKET DATA ANALYTICS HUB', 
-      tag: 'H1', 
-      category: 'Capital Markets', 
-      desc: 'Terminal de análise de dados de mercado em tempo real para fundos e corretoras.', 
-      owner: 'Igor Martins', 
-      squad: 'Epsilon',
-      revenue: 'R$ 1.8M ARR',
-      bu: 'Capital Markets',
-      mercado: 'B2B',
-      horizonte: 'H1',
-      stats: { revenue: 'R$ 1.8M ARR', leads: '300/mês', clients: '10 assets', bu: 'Capital Markets' },
-      problem: 'Falta de ferramentas acessíveis para análise quantitativa de mercado.',
-      useCases: ['Análise técnica', 'Backtesting de estratégias'],
-      solutions: ['Streaming de dados B3', 'Motor de backtesting'],
-      tech: ['C++', 'Python', 'React'],
-      success: 'Asset A: Melhoria de 12% no alpha das estratégias quantitativas.',
-      pricing: 'SaaS - R$ 4.000/usuário'
-    },
-    { 
-      id: 10, 
-      title: 'QUANTUM PREDICTOR', 
-      tag: 'H3', 
-      category: 'Inovação e Pesquisa', 
-      desc: 'Algoritmo quântico experimental para predição de cenários econômicos globais com alta precisão.', 
-      owner: 'Helena Souza', 
-      squad: 'Epsilon',
-      revenue: 'R$ 0 ARR',
-      bu: 'Negócios e Infraestrutura',
-      mercado: 'B2B',
-      horizonte: 'H3',
-      stats: { revenue: 'R$ 0 ARR', leads: '10/mês', clients: '1 parceiro acadêmico', bu: 'Negócios e Infraestrutura' },
-      problem: 'Limitações de processamento clássico para modelos macroeconômicos complexos.',
-      useCases: ['Simulação de crises', 'Otimização de portfólio quântico'],
-      solutions: ['Algoritmos de Grover adaptados', 'Integração com computadores quânticos IBM'],
-      tech: ['Qiskit', 'Python', 'C++'],
-      success: 'Lab X: Redução de 99% no tempo de simulação de Monte Carlo.',
-      pricing: 'Pesquisa e Desenvolvimento'
-    },
-    { 
-      id: 11, 
-      title: 'BLOCKCHAIN LEDGER', 
-      tag: 'H2', 
-      category: 'Negócios e Infraestrutura', 
-      desc: 'Infraestrutura de registro distribuído para liquidação instantânea de ativos financeiros.', 
-      owner: 'Igor Martins', 
-      squad: 'Delta',
-      revenue: 'R$ 0.3M ARR',
-      bu: 'Negócios e Infraestrutura',
-      mercado: 'B2B',
-      horizonte: 'H2',
-      stats: { revenue: 'R$ 0.3M ARR', leads: '50/mês', clients: '2 bancos teste', bu: 'Negócios e Infraestrutura' },
-      problem: 'Lentidão e falta de transparência em processos de clearing bancário.',
-      useCases: ['Liquidação D+0', 'Tokenização de recebíveis'],
-      solutions: ['Hyperledger Fabric', 'Smart Contracts'],
-      tech: ['Go', 'Docker', 'Kubernetes'],
-      success: 'Banco Y: Redução de 70% no custo de backoffice de liquidação.',
-      pricing: 'SaaS + Taxa por transação'
-    },
-    { 
-      id: 12, 
-      title: 'CYBER DEFENSE AI', 
-      tag: 'H1', 
-      category: 'Loss Prevention', 
-      desc: 'Sistema de defesa proativa contra ataques cibernéticos em infraestruturas críticas.', 
-      owner: 'Carlos Santos', 
-      squad: 'Beta',
-      revenue: 'R$ 5.5M ARR',
-      bu: 'Loss Prevention',
-      mercado: 'B2B',
-      horizonte: 'H1',
-      stats: { revenue: 'R$ 5.5M ARR', leads: '200/mês', clients: '12 empresas', bu: 'Loss Prevention' },
-      problem: 'Aumento de ataques de ransomware e vazamento de dados sensíveis.',
-      useCases: ['Detecção de intrusão', 'Análise de comportamento de rede'],
-      solutions: ['Deep Learning para anomalias', 'Resposta automática a incidentes'],
-      tech: ['Python', 'ELK Stack', 'TensorFlow'],
-      success: 'Empresa Z: Bloqueio de 100% das tentativas de exfiltração de dados em 2025.',
-      pricing: 'SaaS - R$ 25.000/mês'
+  useEffect(() => {
+    async function fetchProducts() {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase.from('products').select('*');
+        if (error) throw error;
+        
+        // Map DB results to expected UI format
+        const mapped = data.map(item => ({
+            id: item.id,
+            sku: item.sku,
+            title: item.name,
+            tag: item.metadata?.tag || 'H1',
+            category: item.category || 'Geral',
+            desc: item.description || '',
+            owner: item.metadata?.owner || 'Time Trillia',
+            squad: item.metadata?.squad || 'Geral',
+            revenue: item.metadata?.revenue || 'N/A',
+            bu: item.metadata?.bu || (item.category || 'Geral'),
+            mercado: item.metadata?.mercado || 'B2B',
+            horizonte: item.metadata?.horizonte || 'H1',
+            price: item.price ? `R$ ${item.price}` : 'Sob Consulta',
+            stock: item.stock_status
+        }));
+        setProducts(mapped);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  ];
+    fetchProducts();
+  }, []);
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -543,6 +344,16 @@ const CatalogView = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, filters]);
+
+  if (isLoading) {
+    return (
+        <div className="flex h-[60vh] items-center justify-center">
+            <div className="animate-spin-slow">
+                <div className="w-12 h-12 border-4 border-ink/10 border-t-primary rounded-full"></div>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-12 max-w-[1600px] mx-auto space-y-12">
@@ -1022,12 +833,39 @@ const BruceAssistant = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
     setIsLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const model = "gemini-3-flash-preview";
+      // 1. Generate embedding for the user's query
+      const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
+      const embedModel = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
+      const embedResult = await embedModel.embedContent(input);
+      const queryEmbedding = embedResult.embedding.values;
+
+      // 2. Perform similarity search in Supabase vector store
+      const { data: documents, error } = await supabase.rpc('match_documents', {
+        query_embedding: queryEmbedding,
+        match_threshold: 0.5, // Return documents with at least 50% similarity
+        match_count: 5 // Return top 5 matches
+      });
+
+      if (error) {
+          console.error("Vector search error:", error);
+      }
+
+      // 3. Compile context from matched documents
+      let contextString = "Contexto encontrado nos documentos da base de conhecimento:\n";
+      if (documents && documents.length > 0) {
+        documents.forEach((doc: any, i: number) => {
+          contextString += `\n[Documento ${i + 1} - Origem: ${doc.metadata?.source || 'Desconhecida'}]:\n${doc.content}\n`;
+        });
+      } else {
+        contextString += "Não encontrei documentos específicos no catálogo sobre este tópico, tentarei responder com base no que sei.";
+      }
+
+      // 4. Generate response using Gemini 3.0 Flash with the retrieved context
+      const chatModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); // Using 2.5 flash as it's the latest available fast model in the API
       
       const systemInstruction = `Você é o Bruce Assistente, um agente de IA especializado no ecossistema de produtos da Trillia.
 Seu objetivo é:
-1. Explicar os produtos do catálogo detalhadamente.
+1. Explicar os produtos do catálogo detalhadamente, usando EXCLUSIVAMENTE as informações fornecidas no contexto.
 2. Manter um foco comercial, destacando benefícios, ROI e casos de sucesso.
 3. Tirar dúvidas dos usuários sobre a metodologia H3, horizontes de inovação e governança.
 
@@ -1039,42 +877,31 @@ A tabela deve conter as seguintes colunas:
 - Como precificar (Modelo de negócio)
 - Objeções principais (O que o cliente costuma questionar e como contornar)
 
-Aqui está o contexto dos produtos disponíveis:
-${JSON.stringify([
-  { id: 1, title: 'MARKET INTELLIGENCE HUB', tag: 'H1', category: 'S&M e Inteligência de Mercado', desc: 'Plataforma centralizada de insights de mercado e análise competitiva em tempo real.', owner: 'Ana Silva', squad: 'Alpha', pricing: 'SaaS - R$ 5.000/mês' },
-  { id: 2, title: 'PROSPECTOR PRO', tag: 'H1', category: 'S&M e Inteligência de Mercado', desc: 'Ferramenta de geração e qualificação de leads B2B com enriquecimento de dados.', owner: 'Bruno Costa', squad: 'Alpha', pricing: 'SaaS - R$ 8.500/mês' },
-  { id: 3, title: 'IDENTITY GUARD AI', tag: 'H1', category: 'Loss Prevention', desc: 'Sistema de verificação de identidade com biometria facial e análise documental.', owner: 'Carlos Santos', squad: 'Beta', pricing: 'Transacional - R$ 2,50/consulta' },
-  { id: 4, title: 'TRANSACTIONAL SHIELD', tag: 'H1', category: 'Loss Prevention', desc: 'Motor de regras e IA para detecção de fraudes em transações financeiras em tempo real.', owner: 'Daniela Lima', squad: 'Beta', pricing: 'Transacional - 0.1% do volume processado' },
-  { id: 5, title: 'CREDIT DECISION ENGINE', tag: 'H1', category: 'Crédito e Cobrança', desc: 'Motor de decisão automatizado para aprovação de crédito com modelos customizáveis.', owner: 'Eduardo Rocha', squad: 'Gamma', pricing: 'SaaS + Transacional' },
-  { id: 6, title: 'RECOVERY OPTIMIZER', tag: 'H1', category: 'Crédito e Cobrança', desc: 'Plataforma de gestão e otimização de cobrança com canais digitais integrados.', owner: 'Fernanda Oliveira', squad: 'Gamma', pricing: 'SaaS - R$ 12.000/mês' },
-  { id: 7, title: 'SMART UNDERWRITER', tag: 'H2', category: 'Cotação e Subscrição', desc: 'Sistema de auxílio à subscrição de riscos complexos com análise de dados externos.', owner: 'Gustavo Lima', squad: 'Delta', pricing: 'SaaS - R$ 15.000/mês' },
-  { id: 8, title: 'COLLATERAL REGISTRY AI', tag: 'H2', category: 'Negócios e Infraestrutura', desc: 'Plataforma para registro e avaliação automatizada de garantias reais.', owner: 'Helena Souza', squad: 'Delta', pricing: 'SaaS - R$ 20.000/mês' },
-  { id: 9, title: 'MARKET DATA ANALYTICS HUB', tag: 'H1', category: 'Capital Markets', desc: 'Terminal de análise de dados de mercado em tempo real para fundos e corretoras.', owner: 'Igor Martins', squad: 'Epsilon', pricing: 'SaaS - R$ 4.000/usuário' }
-])}
+Aqui está o contexto extraído dos documentos oficiais da Trillia para responder a esta pergunta:
+${contextString}
 
-Aqui está o contexto da metodologia H3:
-- H3 (Discovery): Validação de tese e problema. Foco em inovação radical.
-- H2 (Engenharia): Construção de MVP e primeira venda. Foco em tração.
-- H1 (Escala): Máquina de vendas e crescimento acelerado. Foco em eficiência.
+Regra de Ouro: Baseie suas respostas ESTRITAMENTE no contexto fornecido acima. Se a resposta não estiver no contexto, diga que não tem essa informação no momento, mas ofereça ajuda com outros tópicos do catálogo. Seja profissional, propositivo e persuasivo. Responda em Português do Brasil. Formate sua resposta com Markdown limpo.`;
 
-Seja profissional, técnico e persuasivo. Responda em Português do Brasil.`;
-
-      const response = await ai.models.generateContent({
-        model,
-        contents: messages.concat(userMessage).map(m => ({
+      // Build chat history for context
+      const chatHistory = messages
+        .filter(m => m.role !== 'system' || m.text.includes('Olá. Sou o Bruce')) // Keep first message and user messages
+        .map(m => ({
           role: m.role === 'system' ? 'model' : 'user',
           parts: [{ text: m.text }]
-        })),
-        config: {
-          systemInstruction,
-        }
+        }));
+
+      const chat = chatModel.startChat({
+        history: chatHistory,
+        systemInstruction: { role: 'system', parts: [{ text: systemInstruction }] }
       });
 
-      const aiText = response.text || "Desculpe, tive um problema ao processar sua solicitação.";
+      const response = await chat.sendMessage(input);
+      const aiText = response.response.text() || "Desculpe, tive um problema ao processar sua solicitação.";
+      
       setMessages(prev => [...prev, { role: 'system', text: aiText }]);
     } catch (error) {
-      console.error("Gemini Error:", error);
-      setMessages(prev => [...prev, { role: 'system', text: "Erro na conexão com o Bruce. Verifique sua chave de API ou tente novamente mais tarde." }]);
+      console.error("Gemini/Supabase Error:", error);
+      setMessages(prev => [...prev, { role: 'system', text: "Erro ao processar sua solicitação com o RAG. Verifique a conexão com o Supabase ou as chaves da API do Gemini." }]);
     } finally {
       setIsLoading(false);
     }
