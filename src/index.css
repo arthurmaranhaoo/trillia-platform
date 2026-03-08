@@ -1,0 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-primary: #004EFF;
+  --color-accent-green: #9FF792;
+  --color-surface: #F8F9FB;
+  --color-ink: #001728;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-ink font-display overflow-x-hidden;
+    background-image: radial-gradient(#E5E7EB 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-surface;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-ink/10 rounded-full hover:bg-primary/20 transition-colors;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/40 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(0,78,255,0.05)] rounded-2xl;
+  }
+  
+  .nav-item {
+    @apply font-mono text-[11px] tracking-widest uppercase text-ink/60 hover:text-primary transition-all cursor-pointer relative py-2;
+  }
+
+  .nav-item.active::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white px-10 py-4 rounded-full font-black text-sm hover:opacity-90 transition-all shadow-xl shadow-primary/25 uppercase tracking-tight;
+  }
+
+  .btn-secondary {
+    @apply border border-primary text-primary px-10 py-4 rounded-xl font-black text-sm hover:bg-primary/5 transition-all uppercase tracking-tight;
+  }
+}
+
+@layer utilities {
+  @keyframes pulse-flow {
+    0% { stroke-dashoffset: 500; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  .animate-pulse-flow {
+    animation: pulse-flow 3s infinite linear;
+  }
+
+  .animate-pulse-flow-delayed {
+    animation: pulse-flow 3s infinite linear;
+    animation-delay: -1.5s;
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 12s linear infinite;
+  }
+
+  @keyframes slide-h {
+    0% { transform: translateX(-200px); }
+    50% { transform: translateX(200px); }
+    100% { transform: translateX(-200px); }
+  }
+
+  @keyframes slide-v {
+    0% { transform: translateY(-150px); }
+    50% { transform: translateY(150px); }
+    100% { transform: translateY(-150px); }
+  }
+
+  .animate-slide-h {
+    animation: slide-h 3s steps(10) infinite;
+  }
+
+  .animate-slide-v {
+    animation: slide-v 4s steps(10) infinite;
+  }
+
+  .bg-mesh {
+    background-color: #ffffff;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(0, 78, 255, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(159, 247, 146, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(0, 78, 255, 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(159, 247, 146, 0.05) 0px, transparent 50%);
+  }
+
+  .spotlight {
+    background: radial-gradient(
+      600px circle at var(--x) var(--y),
+      rgba(0, 78, 255, 0.03),
+      transparent 40%
+    );
+  }
+
+  .markdown-content p {
+    margin-bottom: 0.5rem;
+  }
+  .markdown-content p:last-child {
+    margin-bottom: 0;
+  }
+  .markdown-content strong {
+    font-weight: 800;
+  }
+  .markdown-content ul {
+    list-style-type: disc;
+    margin-left: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  .markdown-content table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .markdown-content table::-webkit-scrollbar {
+    height: 4px;
+  }
+  .markdown-content table::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .markdown-content table::-webkit-scrollbar-thumb {
+    background: rgba(0, 78, 255, 0.1);
+    border-radius: 10px;
+  }
+  .markdown-content th, .markdown-content td {
+    border: 1px solid rgba(0, 23, 40, 0.1);
+    padding: 0.75rem;
+    text-align: left;
+  }
+  .markdown-content th {
+    background-color: rgba(0, 78, 255, 0.05);
+    font-weight: 700;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+  }
+}
