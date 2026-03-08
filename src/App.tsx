@@ -857,7 +857,7 @@ const BruceAssistant = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
       const { data: documents, error } = await supabase.rpc('match_documents', {
         query_embedding: queryEmbedding,
         match_threshold: 0.5, // Return documents with at least 50% similarity
-        match_count: 5 // Return top 5 matches
+        match_count: 10 // Increase to top 10 matches for broader context
       });
 
       if (error) {
@@ -865,7 +865,7 @@ const BruceAssistant = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
       }
 
       // 3. Compile context from matched documents
-      let contextString = "Contexto encontrado nos documentos da base de conhecimento:\n";
+      let contextString = "Contexto encontrado nos documentos da base de conhecimento (Note que este é apenas um recorte semântico dos produtos mais relevantes, a base possui dezenas de outros produtos):\n";
       if (documents && documents.length > 0) {
         documents.forEach((doc: any, i: number) => {
           contextString += `\n[Documento ${i + 1} - Origem: ${doc.metadata?.source || 'Desconhecida'}]:\n${doc.content}\n`;
@@ -882,6 +882,9 @@ Seu objetivo é:
 1. Explicar os produtos do catálogo detalhadamente, usando EXCLUSIVAMENTE as informações fornecidas no contexto.
 2. Manter um foco comercial, destacando benefícios, ROI e casos de sucesso.
 3. Tirar dúvidas dos usuários sobre a metodologia H3, horizontes de inovação e governança.
+
+INSTRUÇÃO CRÍTICA SOBRE O TAMANHO DO PORTFÓLIO: 
+O portfólio atual da Trillia possui 50 produtos cadastrados no total. O contexto injetado abaixo contém APENAS os 10 produtos mais relevantes recuperados pela busca semântica para responder à pergunta atual. NUNCA diga que o portfólio tem apenas "5 produtos" ou "10 produtos". Se perguntarem quantos produtos existem, a verdadeira resposta é 50 produtos (e isso cresce em tempo real através da planilha unificada).
 
 Sempre que o usuário pedir uma comparação entre produtos, você DEVE obrigatoriamente utilizar uma tabela Markdown para facilitar a visualização.
 A tabela deve conter as seguintes colunas:
