@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
@@ -42,12 +42,18 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 const Logo = () => (
   <div className="flex items-center gap-3">
-    <div className="grid grid-cols-3 gap-1">
-      {[...Array(9)].map((_, i) => (
-        <div key={i} className="w-1.5 h-1.5 rounded-full bg-accent-green" />
-      ))}
-    </div>
-    <span className="text-2xl font-black text-primary lowercase tracking-tighter">trillia</span>
+    <svg width="109" height="30" viewBox="0 0 109 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M39.5529 4.42378C37.115 4.42378 35.1361 2.44475 35.1361 0H34.079C34.079 2.44112 32.1026 4.42378 29.6623 4.42378C27.2219 4.42378 25.2454 2.44475 25.2454 0H24.1908C24.1908 2.44112 22.2144 4.42378 19.7741 4.42378C17.3336 4.42378 15.3572 2.44475 15.3572 0H14.3026C14.3026 2.44112 12.3262 4.42378 9.88583 4.42378C7.44546 4.42378 5.47144 2.44112 5.47144 0H4.41678C4.41678 2.44112 2.44034 4.42378 0 4.42378V5.47983C2.43792 5.47983 4.41678 7.45884 4.41678 9.90364H5.47144C5.47144 7.46248 7.44788 5.47983 9.88822 5.47983C12.3286 5.47983 14.305 7.45884 14.305 9.90364C14.305 12.3483 12.3286 14.3274 9.88822 14.3274V15.3834C12.3262 15.3834 14.305 17.3625 14.305 19.8072H15.3597C15.3597 17.3661 17.3361 15.3834 19.7764 15.3834C22.2168 15.3834 24.1932 17.3625 24.1932 19.8072C24.1932 22.252 22.2168 24.231 19.7764 24.231V25.2871C22.2144 25.2871 24.1932 27.2661 24.1932 29.7108H25.2478C25.2478 27.2697 27.2243 25.2871 29.6647 25.2871V24.231C27.2267 24.231 25.2478 22.252 25.2478 19.8072C25.2478 17.3625 27.2243 15.3834 29.6647 15.3834V14.3274C27.2267 14.3274 25.2478 12.3483 25.2478 9.90364C25.2478 7.45884 27.2243 5.47983 29.6647 5.47983C32.105 5.47983 34.0814 7.45884 34.0814 9.90364H35.1361C35.1361 7.46248 37.1126 5.47983 39.5529 5.47983V4.42378ZM19.7741 14.3237C17.3361 14.3237 15.3572 12.3447 15.3572 9.9C15.3572 7.45521 17.3336 5.47619 19.7741 5.47619C22.2144 5.47619 24.1908 7.45521 24.1908 9.9C24.1908 12.3447 22.2144 14.3237 19.7741 14.3237Z" fill="#9FF792"/>
+      <path d="M57.4589 19.2798H56.8428V14.3262H52.9177V29.6843H56.8428V26.3976C56.8428 25.1891 56.9298 24.0835 57.1038 23.0807C57.6015 20.2113 59.1479 18.1948 63.4329 18.1948H63.9621V14.3262H63.4389C62.5896 14.3262 58.4822 13.9766 57.4589 19.2798Z" fill="#004EFF"/>
+      <path d="M69.9669 14.3275H66.0418V29.6855H69.9669V14.3275Z" fill="#004EFF"/>
+      <path d="M76.3146 7.53748H72.3895V29.6842H76.3146V7.53748Z" fill="#004EFF"/>
+      <path d="M82.756 7.53745H78.8309V29.6842H82.756V7.53745Z" fill="#004EFF"/>
+      <path d="M89.1961 14.3274H85.2714V29.6854H89.1961V14.3274Z" fill="#004EFF"/>
+      <path d="M107.705 18.7282V18.7198C107.306 17.7375 106.737 16.898 106.004 16.2C105.267 15.5045 104.381 14.9661 103.35 14.5863C102.318 14.2089 101.168 14.0178 99.8991 14.0178C98.98 14.0178 98.0857 14.1496 97.2137 14.4182C96.3452 14.6854 95.5575 15.0629 94.8524 15.5553C94.1464 16.0476 93.5452 16.6258 93.0408 17.2899C92.5408 17.954 92.198 18.6871 92.0151 19.4867H96.0335C96.1969 18.6048 96.6409 17.9044 97.3682 17.3831C98.0937 16.8592 99.0102 16.6004 100.112 16.6004C102.319 16.6004 103.669 17.7266 104.161 19.979C103.811 19.9391 103.398 19.9113 102.918 19.9028C102.436 19.8919 101.962 19.8883 101.491 19.8883C100.019 19.8883 98.6851 20.0201 97.4881 20.2887C96.2937 20.556 95.2644 20.9335 94.4066 21.4258C93.5487 21.9181 92.8827 22.5217 92.4129 23.2391C91.9432 23.9564 91.7078 24.7742 91.7078 25.6972C91.7078 27.0097 92.1625 28.0512 93.071 28.8314C93.9794 29.6116 95.2023 30 96.7377 30C98.6212 30 102.355 29.2064 103.849 24.7427H104.377V29.6927H108.303V22.0137C108.303 20.8052 108.104 19.7105 107.704 18.727L107.705 18.7282ZM103.102 24.3544L103.105 24.3568C102.685 24.9205 102.217 25.4129 101.694 25.8326C101.171 26.2524 100.605 26.579 99.9897 26.8149C99.3778 27.0519 98.742 27.1693 98.0902 27.1693C97.3105 27.1693 96.7093 27 96.2786 26.6624C95.8487 26.325 95.6347 25.9101 95.6347 25.4177C95.6347 24.9254 95.8088 24.531 96.156 24.173C96.505 23.8149 96.9854 23.5028 97.5982 23.2354C98.2109 22.9706 98.9365 22.7709 99.7739 22.6355C100.612 22.5036 101.511 22.4358 102.473 22.4358C102.799 22.4358 103.097 22.442 103.361 22.4504C103.625 22.4613 103.873 22.4758 104.098 22.4951C103.854 23.1713 103.519 23.7907 103.102 24.3532V24.3544Z" fill="#004EFF"/>
+      <path d="M46.379 9.90602L46.3814 9.90363H43.8963C43.8963 12.3447 41.9199 14.3274 39.4796 14.3274V17.614H42.4539V24.7124C42.4539 26.4132 42.9456 27.6664 43.9277 28.4745C44.9088 29.2826 46.4442 29.6878 48.527 29.6878H50.5203V26.3092H48.62C47.7816 26.3092 47.1969 26.1036 46.8707 25.6959C46.5444 25.287 46.379 24.6628 46.379 23.8233V17.6177H50.5203V14.331H46.379V9.90726V9.90602Z" fill="#004EFF"/>
+      <path d="M70.2121 9.91938C70.222 8.6988 69.242 7.70126 68.0231 7.69124C66.8041 7.68122 65.8078 8.66254 65.7978 9.88312C65.7879 11.1037 66.7679 12.1012 67.9868 12.1113C69.2057 12.1213 70.202 11.14 70.2121 9.91938Z" fill="#004EFF"/>
+      <path d="M86.5932 7.77699C85.4262 8.1314 84.7678 9.36527 85.1205 10.5338C85.4733 11.7024 86.7055 12.3629 87.8726 12.0085C89.0392 11.654 89.6981 10.4202 89.3456 9.25163C88.9921 8.08308 87.7602 7.42258 86.5932 7.77699Z" fill="#004EFF"/>
+    </svg>
   </div>
 );
 
@@ -57,30 +63,32 @@ const Topbar = ({ activeTab, setActiveTab, onOpenAssistant }: { activeTab: strin
       <Logo />
     </div>
     <nav className="hidden md:flex items-center gap-10">
-      <span 
-        onClick={() => setActiveTab('inicio')}
-        className={`nav-item ${activeTab === 'inicio' ? 'text-primary active' : ''}`}
-      >
-        // INÍCIO
-      </span>
-      <span 
-        onClick={() => setActiveTab('horizontes')}
-        className={`nav-item ${activeTab === 'horizontes' ? 'text-primary active' : ''}`}
-      >
-        // HORIZONTES
-      </span>
-      <span 
-        onClick={() => setActiveTab('catalogo')}
-        className={`nav-item ${activeTab === 'catalogo' ? 'text-primary active' : ''}`}
-      >
-        // EXPLORAR
-      </span>
-      <span 
+      {[
+        { id: 'inicio', label: '// INÍCIO' },
+        { id: 'horizontes', label: '// HORIZONTES' },
+        { id: 'catalogo', label: '// CATÁLOGO' }
+      ].map((item) => (
+        <button 
+          key={item.id}
+          onClick={() => setActiveTab(item.id)}
+          className={`nav-item ${activeTab === item.id ? 'text-primary' : ''}`}
+        >
+          {item.label}
+          {activeTab === item.id && (
+            <motion.div 
+              layoutId="nav-active"
+              className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            />
+          )}
+        </button>
+      ))}
+      <button 
         onClick={onOpenAssistant}
-        className="nav-item flex items-center gap-2"
+        className="nav-item"
       >
         // ASSISTENTE
-      </span>
+      </button>
     </nav>
     <div className="flex items-center gap-4">
     </div>
@@ -153,7 +161,7 @@ const DataLoom = () => (
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.5 }}
-      className="absolute top-8 left-8 p-4 glass-card border-white/40 space-y-1"
+      className="absolute top-8 left-8 p-4 glass-card space-y-1"
     >
       <p className="text-[8px] font-mono font-bold text-ink/30 uppercase tracking-widest">THROUGHPUT</p>
       <p className="text-xl font-black text-primary">842.01 <span className="text-[10px] opacity-50">GB/S</span></p>
@@ -163,7 +171,7 @@ const DataLoom = () => (
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.8 }}
-      className="absolute bottom-8 right-8 p-4 glass-card border-white/40 text-right space-y-1"
+      className="absolute bottom-8 right-8 p-4 glass-card text-right space-y-1"
     >
       <p className="text-[8px] font-mono font-bold text-ink/30 uppercase tracking-widest">LATENCY</p>
       <p className="text-xl font-black text-accent-green">0.04ms</p>
@@ -217,7 +225,7 @@ const HomeView = ({ onNavigate }: { onNavigate: (t: string) => void }) => {
       tag: 'PRODUTOS',
       title: 'O portfólio de produtos',
       desc: 'Explore o catálogo completo de 9 produtos ativos. Filtre por BU ou mercado.',
-      category: 'EXPLORAR'
+      category: 'CATÁLOGO'
     },
     {
       id: 'bruce',
@@ -237,13 +245,17 @@ const HomeView = ({ onNavigate }: { onNavigate: (t: string) => void }) => {
             <div className="h-[1px] w-8 bg-primary" />
             <span className="font-mono text-[10px] text-primary font-bold tracking-widest uppercase">FÁBRICA DE PRODUTOS 2026</span>
           </div>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black leading-[0.9] tracking-tighter uppercase">
-            O QUE VOCÊ PRECISA <br />
-            <span className="text-primary">APRENDER</span>?
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tighter uppercase max-w-4xl">
+            Explorar, aprender e criar: o caminho para transformar o mercado com a <span className="text-primary">Trillia</span>.
           </h1>
-          <p className="text-ink/60 max-w-md text-lg leading-relaxed">
-            Explore o ecossistema de Produtos da Trillia: entenda nossos horizontes de inovação, consulte o catálogo de produtos e tire dúvidas com o Bruce Assistente.
-          </p>
+          <div className="space-y-6 max-w-4xl">
+            <p className="text-ink/60 text-lg leading-relaxed">
+              Esta é a nossa Fonte da Verdade. É aqui que a estratégia da Trillia ganha vida e se transforma em soluções reais, desenhadas para resolver dores profundas e gerar impacto genuíno na jornada dos nossos clientes. Criamos este espaço para que você tenha total clareza sobre como nosso portfólio se move e evolui, garantindo que cada entrega faça sentido dentro dos desafios de cada setor onde atuamos.
+            </p>
+            <p className="text-ink/60 text-lg leading-relaxed">
+              Sinta-se em casa para explorar nosso ecossistema e entender como cada produto impulsiona o sucesso de quem confia no nosso trabalho. Se precisar de uma direção rápida ou quiser validar um detalhe, nosso assistente está aqui para te apoiar em tempo real. Este é o seu ponto de partida para viabilizar novos negócios, acelerar resultados e, acima de tudo, trazer seu olhar e suas ideias para que a nossa Fábrica de Produtos continue antecipando as necessidades do mercado e construindo o futuro junto com você.
+            </p>
+          </div>
         </div>
         <div className="flex-1 w-full h-full min-h-[400px] flex items-center justify-center">
           <Machinery />
@@ -292,6 +304,31 @@ const CatalogView = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 12;
+  
+  const uniqueHorizontes = useMemo(() => {
+    const values = [...new Set(products.map(p => p.horizonte).filter(Boolean))].sort();
+    return ['Todos', ...values];
+  }, [products]);
+
+  const uniqueBUs = useMemo(() => {
+    const values = [...new Set(products.map(p => p.bu).filter(Boolean))].sort();
+    return ['Todas', ...values];
+  }, [products]);
+
+  const uniqueSquads = useMemo(() => {
+    const values = [...new Set(products.map(p => p.squad).filter(Boolean))].sort();
+    return ['Todas', ...values];
+  }, [products]);
+
+  const uniqueResponsaveis = useMemo(() => {
+    const values = [...new Set(products.map(p => p.owner).filter(Boolean))].sort();
+    return ['Todos', ...values];
+  }, [products]);
+
+  const uniqueMercados = useMemo(() => {
+    const values = [...new Set(products.map(p => p.mercado).filter(Boolean))].sort();
+    return ['Todos', ...values];
+  }, [products]);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -333,13 +370,18 @@ const CatalogView = () => {
   }, []);
 
   const filteredProducts = products.filter(p => {
-    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         p.desc.toLowerCase().includes(searchQuery.toLowerCase());
+    const searchLow = searchQuery.toLowerCase().trim();
+    const titleLow = p.title?.toLowerCase() || '';
+    const descLow = p.desc?.toLowerCase() || '';
+    
+    const matchesSearch = searchLow === '' || titleLow.includes(searchLow) || descLow.includes(searchLow);
+    
     const matchesBU = filters.bu === 'Todas' || p.bu === filters.bu;
     const matchesMercado = filters.mercado === 'Todos' || p.mercado === filters.mercado;
     const matchesHorizonte = filters.horizonte === 'Todos' || p.horizonte === filters.horizonte;
     const matchesSquad = filters.squad === 'Todas' || p.squad === filters.squad;
     const matchesResponsavel = filters.responsavel === 'Todos' || p.owner === filters.responsavel;
+    
     return matchesSearch && matchesBU && matchesMercado && matchesHorizonte && matchesSquad && matchesResponsavel;
   });
 
@@ -402,7 +444,7 @@ const CatalogView = () => {
                   onChange={(e) => setFilters({ ...filters, horizonte: e.target.value })}
                   className="pl-4 pr-10 py-2 bg-white border border-ink/10 rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all appearance-none cursor-pointer w-40 shadow-sm"
                 >
-                  {['Todos', 'H1', 'H2', 'H3'].map(horizonte => (
+                  {uniqueHorizontes.map(horizonte => (
                     <option key={horizonte} value={horizonte}>{horizonte}</option>
                   ))}
                 </select>
@@ -420,7 +462,7 @@ const CatalogView = () => {
                   onChange={(e) => setFilters({ ...filters, bu: e.target.value })}
                   className="pl-4 pr-10 py-2 bg-white border border-ink/10 rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all appearance-none cursor-pointer w-40 shadow-sm"
                 >
-                  {['Todas', 'S&M e Inteligência de Mercado', 'Loss Prevention', 'Crédito e Cobrança', 'Cotação e Subscrição', 'Negócios e Infraestrutura', 'Capital Markets'].map(bu => (
+                  {uniqueBUs.map(bu => (
                     <option key={bu} value={bu}>{bu}</option>
                   ))}
                 </select>
@@ -438,7 +480,7 @@ const CatalogView = () => {
                   onChange={(e) => setFilters({ ...filters, squad: e.target.value })}
                   className="pl-4 pr-10 py-2 bg-white border border-ink/10 rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all appearance-none cursor-pointer w-40 shadow-sm"
                 >
-                  {['Todas', 'Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon'].map(squad => (
+                  {uniqueSquads.map(squad => (
                     <option key={squad} value={squad}>{squad}</option>
                   ))}
                 </select>
@@ -456,7 +498,7 @@ const CatalogView = () => {
                   onChange={(e) => setFilters({ ...filters, responsavel: e.target.value })}
                   className="pl-4 pr-10 py-2 bg-white border border-ink/10 rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all appearance-none cursor-pointer w-40 shadow-sm"
                 >
-                  {['Todos', 'Ana Silva', 'Bruno Costa', 'Carlos Santos', 'Daniela Lima', 'Eduardo Rocha', 'Fernanda Oliveira', 'Gustavo Lima', 'Helena Souza', 'Igor Martins'].map(resp => (
+                  {uniqueResponsaveis.map(resp => (
                     <option key={resp} value={resp}>{resp}</option>
                   ))}
                 </select>
@@ -474,7 +516,7 @@ const CatalogView = () => {
                   onChange={(e) => setFilters({ ...filters, mercado: e.target.value })}
                   className="pl-4 pr-10 py-2 bg-white border border-ink/10 rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all appearance-none cursor-pointer w-40 shadow-sm"
                 >
-                  {['Todos', 'B2B', 'B2C', 'B2B2C'].map(mercado => (
+                  {uniqueMercados.map(mercado => (
                     <option key={mercado} value={mercado}>{mercado}</option>
                   ))}
                 </select>
@@ -554,7 +596,7 @@ const CatalogView = () => {
                   transition: { duration: 0.2 }
                 } : { x: 12 }}
                 onClick={() => setSelectedProduct(product)}
-                className={`glass-card group cursor-pointer border-transparent hover:border-primary/20 transition-all overflow-hidden flex perspective-1000 relative ${viewMode === 'grid' ? 'flex-col h-full min-h-[450px]' : 'flex-row items-center p-6 gap-8'}`}
+                className={`glass-card group cursor-pointer hover:border-primary/20 transition-all overflow-hidden flex perspective-1000 relative ${viewMode === 'grid' ? 'flex-col h-full min-h-[450px]' : 'flex-row items-center p-6 gap-8'}`}
               >
                 {/* Hover Glow */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -666,15 +708,56 @@ const CatalogView = () => {
           </button>
           
           <div className="flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`w-10 h-10 rounded-lg text-xs font-mono font-bold transition-all hover:-translate-y-1 active:scale-95 ${currentPage === page ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-ink/30 hover:text-ink hover:bg-surface border border-transparent hover:border-ink/5'}`}
-              >
-                {page.toString().padStart(2, '0')}
-              </button>
-            ))}
+            {totalPages <= 7 ? (
+              Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-10 h-10 rounded-lg text-xs font-mono font-bold transition-all hover:-translate-y-1 active:scale-95 ${currentPage === page ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-ink/30 hover:text-ink hover:bg-surface border border-transparent hover:border-ink/5'}`}
+                >
+                  {page.toString().padStart(2, '0')}
+                </button>
+              ))
+            ) : (
+              <>
+                {[1, 2].map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-10 h-10 rounded-lg text-xs font-mono font-bold transition-all ${currentPage === page ? 'bg-primary text-white' : 'text-ink/30 hover:bg-surface'}`}
+                  >
+                    {page.toString().padStart(2, '0')}
+                  </button>
+                ))}
+                
+                {currentPage > 4 && <span className="text-ink/20 font-mono text-[10px]">...</span>}
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => page > 2 && page < totalPages - 1 && Math.abs(page - currentPage) <= 1)
+                  .map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-10 h-10 rounded-lg text-xs font-mono font-bold transition-all ${currentPage === page ? 'bg-primary text-white' : 'text-ink/30 hover:bg-surface'}`}
+                    >
+                      {page.toString().padStart(2, '0')}
+                    </button>
+                  ))
+                }
+
+                {currentPage < totalPages - 3 && <span className="text-ink/20 font-mono text-[10px]">...</span>}
+
+                {[totalPages - 1, totalPages].map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-10 h-10 rounded-lg text-xs font-mono font-bold transition-all ${currentPage === page ? 'bg-primary text-white' : 'text-ink/30 hover:bg-surface'}`}
+                  >
+                    {page.toString().padStart(2, '0')}
+                  </button>
+                ))}
+              </>
+            )}
           </div>
 
           <button 
@@ -823,6 +906,94 @@ const CatalogView = () => {
   );
 };
 
+const METHODOLOGY_CONTEXT = `
+MATRIZ DE HORIZONTES TRILLIA - GUIA COMPLETO DE METODOLOGIA
+
+CONCEITO GERAL:
+A Matriz de Horizontes é o mapa estratégico que guia a evolução de cada produto na Trillia. Dividida em três horizontes (H3, H2, H1), ela define o nível de maturidade, objetivos e critérios de sucesso para avançar na esteira de inovação.
+
+--- HORIZONTE H3: VALIDAÇÃO ---
+OBJETIVO: Reduzir o risco validando a tese de negócio com baixo custo.
+
+SUB-FASE 3.1: Discovery e Concepção
+- DEFINIÇÃO: Estruturar a tese do produto, definindo o problema e o público-alvo.
+- PORTÃO DE ENTRADA: Tese de negócio inicial e visão macro.
+- PORTÃO DE SAÍDA: Tese de produto documentada e aprovada.
+- RED FLAGS: Problema mal definido, público-alvo genérico, falta de diferencial.
+- ARTEFATOS: Tese de Produto, Dicionário de Dados V1.
+- RESPONSÁVEL: PO (Lidera), Lead Tech (Co-cria).
+
+SUB-FASE 3.2: Análise de Mercado e Viabilidade
+- DEFINIÇÃO: Quantificar a oportunidade e analisar riscos técnicos/legais.
+- PORTÃO DE ENTRADA: Tese de produto validada.
+- PORTÃO DE SAÍDA: Business Case e Parecer de Viabilidade.
+- RED FLAGS: Mercado muito pequeno, barreiras legais críticas, CAC inviável.
+- ARTEFATOS: Business Case, Parecer de Viabilidade Técnica.
+- RESPONSÁVEL: PO (Mercado), Lead Tech (Técnico).
+
+SUB-FASE 3.3: Prova de Conceito (PoC)
+- DEFINIÇÃO: Obter prova tangível do valor da solução.
+- PORTÃO DE ENTRADA: Business Case aprovado.
+- PORTÃO DE SAÍDA: Relatório de Validação e PoC funcional.
+- RED FLAGS: Falha técnica, feedback negativo, complexidade excessiva.
+- ARTEFATOS: Relatório de Validação, Esteira Técnica do PoC.
+- RESPONSÁVEL: PO (Qualitativo), Lead Tech (Execução).
+
+--- HORIZONTE H2: CONSTRUÇÃO ---
+OBJETIVO: Transformar a tese validada em um produto vendável e sustentável.
+
+SUB-FASE 2.1: Engenharia e Estratégia Comercial
+- DEFINIÇÃO: Construir a V1 do produto e estruturar o pipeline de vendas.
+- PORTÃO DE ENTRADA: PoC validado.
+- PORTÃO DE SAÍDA: MVP (V1) e Pipeline de Vendas.
+- RED FLAGS: Dívida técnica precoce, falta de leads, instabilidade core.
+- ARTEFATOS: MVP (V1), Data Handoff, Pipeline de Vendas.
+- RESPONSÁVEL: Lead Tech & Squad (Técnico), PO (Comercial).
+
+SUB-FASE 2.2: Vendas & Início do Handover
+- DEFINIÇÃO: Executar a primeira venda para validar o negócio.
+- PORTÃO DE ENTRADA: MVP (V1) estável.
+- PORTÃO DE SAÍDA: Primeiro contrato assinado e handover iniciado.
+- RED FLAGS: Ciclo de venda longo, dificuldade de integração, rejeição operacional.
+- ARTEFATOS: Contrato Assinado, Formulário de Cadastro Técnico.
+- RESPONSÁVEL: Equipe de Negócios (Vendas), Lead Tech (Suporte).
+
+SUB-FASE 2.3: Enxoval & Conclusão do Handover
+- DEFINIÇÃO: Finalizar documentação, capacitar equipes e concluir Passagem de Bola.
+- PORTÃO DE ENTRADA: Primeira venda realizada.
+- PORTÃO DE SAÍDA: Enxoval completo e Passagem de Bola assinada.
+- RED FLAGS: Documentação incompleta, sustentação sem autonomia.
+- ARTEFATOS: Enxoval do Produto, Plano de GTM Soft, Passagem de Bola.
+- RESPONSÁVEL: PO (Negócio), Lead Tech (Técnico).
+
+--- HORIZONTE H1: ESCALA ---
+OBJETIVO: Garantir estabilidade, escalar vendas e evoluir o produto continuamente.
+
+SUB-FASE 1.1: Máquina de Vendas
+- DEFINIÇÃO: Implementar o Hard Launch para escalar leads e vendas.
+- PORTÃO DE ENTRADA: Handover concluído.
+- PORTÃO DE SAÍDA: Hard Launch executado e metas batidas.
+- RED FLAGS: CAC > LTV, instabilidade em alta carga, baixa conversão.
+- ARTEFATOS: Plano de GTM Hard, Materiais de Marketing.
+- RESPONSÁVEL: Marketing & Vendas, PO (Visão).
+
+SUB-FASE 1.2: Sustentação Ativa
+- DEFINIÇÃO: Garantir saúde operacional com monitoramento e suporte.
+- PORTÃO DE ENTRADA: Produto em escala (Hard Launch).
+- PORTÃO DE SAÍDA: SLA garantido e dashboards ativos.
+- RED FLAGS: Churn técnico alto, MTTR elevado, falta de visibilidade.
+- ARTEFATOS: Dashboards de Monitoramento, Relatórios de Incidentes.
+- RESPONSÁVEL: Operações (Liderança), CS (Feedback).
+
+SUB-FASE 1.3: Otimização e Evolução
+- DEFINIÇÃO: Usar dados de performance para melhoria ou reinvenção.
+- PORTÃO DE ENTRADA: Dados de performance consolidados.
+- PORTÃO DE SAÍDA: Roadmap de evolução ou decisão de pivot.
+- RED FLAGS: Produto estagnado, feedback negativo recorrente.
+- ARTEFATOS: Dashboards de Negócio, Proposta de Evolução.
+- RESPONSÁVEL: PM / PO (Análise), Liderança de Produto.
+`;
+
 const BruceAssistant = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
   const [messages, setMessages] = useState([
     { role: 'system', text: 'Olá. Sou o Bruce Assistente! Como posso te ajudar hoje?' }
@@ -877,30 +1048,27 @@ const BruceAssistant = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
       }
 
       // 4. Generate response using Gemini 3.0 Flash with the retrieved context
-      const chatModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); // Using 2.5 flash as it's the latest available fast model in the API
+      const chatModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
       
-      const systemInstruction = `Você é o Bruce Assistente, um agente de IA especializado no ecossistema de produtos da Trillia.
+      const systemInstruction = `Você é o Bruce Assistente, um agente de IA especializado no ecossistema de produtos e na metodologia da Trillia.
 Seu objetivo é:
 1. Explicar os produtos do catálogo detalhadamente, usando EXCLUSIVAMENTE as informações fornecidas no contexto.
-2. Manter um foco comercial, destacando benefícios, ROI e casos de sucesso.
-3. Tirar dúvidas dos usuários sobre a metodologia H3, horizontes de inovação e governança.
+2. Atuar como EXPERTO MÁXIMO na MATRIZ DE HORIZONTES da Trillia. Use o conhecimento permanente abaixo para explicar detalhadamente cada fase (H3, H2, H1), sub-fase, portões de entrada e saída, artefatos, responsabilidades e red flags.
+3. Manter um foco comercial, destacando benefícios, ROI e casos de sucesso.
+
+CONHECIMENTO PERMANENTE (METODOLOGIA TRILLIA):
+${METHODOLOGY_CONTEXT}
 
 INSTRUÇÃO CRÍTICA SOBRE O TAMANHO DO PORTFÓLIO: 
 O contexto injetado abaixo foi trazido diretamente de uma base de dados que é sincronizada em tempo real com uma planilha. Para esta sua resposta, o banco de dados filtrou e trouxe para você a íntegra de ${actualCount} documentos de produtos relacionados de alguma forma à pergunta do usuário. 
 Se o usuário perguntar QUANTOS produtos existem NO TOTAL ou listar produtos, você DEVE contar e confirmar baseando-se que a base atualizou e trouxe ${actualCount} registros. NUNCA diga que o portfólio tem números antigos (como "3 produtos" ou "5 produtos") se o contexto agora lista dezenas.
 
-Sempre que o usuário pedir uma comparação entre produtos, você DEVE obrigatoriamente utilizar uma tabela Markdown para facilitar a visualização.
-A tabela deve conter as seguintes colunas:
-- Dor (Qual problema o produto resolve)
-- Solução (Como ele resolve)
-- Ofertas (O que está incluído)
-- Como precificar (Modelo de negócio)
-- Objeções principais (O que o cliente costuma questionar e como contornar)
+Sempre que o usuário pedir uma comparação entre produtos ou detalhamento de fases da metodologia, você DEVE obrigatoriamente utilizar uma tabela Markdown para facilitar a visualização quando fizer sentido.
 
 Aqui está o contexto extraído dos documentos oficiais da Trillia para responder a esta pergunta:
 ${contextString}
 
-Regra de Ouro: Baseie suas respostas ESTRITAMENTE no contexto fornecido acima. Se a resposta não estiver no contexto, diga que não tem essa informação no momento, mas ofereça ajuda com outros tópicos do catálogo. Seja profissional, propositivo e persuasivo. Responda em Português do Brasil. Formate sua resposta com Markdown limpo.`;
+Regra de Ouro: Baseie suas respostas nos contextos fornecidos acima. Priorize o Conhecimento Permanente para dúvidas sobre como a Trillia trabalha (Horizontes/Metodologia) e o contexto do banco de dados para dúvidas sobre produtos específicos. Se a resposta não estiver em nenhum dos contextos, diga que não tem essa informação no momento. Seja profissional, propositivo e persuasivo. Responda em Português do Brasil. Formate sua resposta com Markdown limpo.`;
 
       // Build chat history for context
       const chatHistory = messages
@@ -1253,8 +1421,8 @@ const HorizontesView = () => {
         {stages.filter(s => s.horizon === 'H3').map((stage, idx) => (
           <motion.div
             key={stage.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: idx * 0.05 }}
             whileHover={{ backgroundColor: 'rgba(var(--primary-rgb), 0.02)' }}
             onClick={() => setSelectedStage(stage)}
@@ -1291,8 +1459,8 @@ const HorizontesView = () => {
         {stages.filter(s => s.horizon === 'H2').map((stage, idx) => (
           <motion.div
             key={stage.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: (idx + 3) * 0.05 }}
             whileHover={{ backgroundColor: 'rgba(var(--primary-rgb), 0.02)' }}
             onClick={() => setSelectedStage(stage)}
@@ -1329,8 +1497,8 @@ const HorizontesView = () => {
         {stages.filter(s => s.horizon === 'H1').map((stage, idx) => (
           <motion.div
             key={stage.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: (idx + 6) * 0.05 }}
             whileHover={{ backgroundColor: 'rgba(var(--primary-rgb), 0.02)' }}
             onClick={() => setSelectedStage(stage)}
@@ -1495,10 +1663,10 @@ export default function App() {
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
             >
               {activeTab === 'inicio' && <HomeView onNavigate={handleNavigate} />}
               {activeTab === 'horizontes' && <HorizontesView />}

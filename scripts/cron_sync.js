@@ -3,13 +3,16 @@ import xlsx from 'xlsx';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const geminiApiKey = process.env.GEMINI_API_KEY;
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+const geminiApiKey = process.env.VITE_GEMINI_API_KEY;
 
 if (!supabaseUrl || !supabaseKey || !geminiApiKey) {
   console.error("Error: Missing SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, or GEMINI_API_KEY environment variables.");
@@ -27,18 +30,25 @@ function cleanValue(val) {
 
 async function performSync() {
   const excelPath = path.join(__dirname, '../data/catalog.xlsx');
-  console.log(`[${new Date().toISOString()}] Reading catalog from Excel: ${excelPath}`);
   
   try {
+    console.log(`[${new Date().toISOString()}] Reading catalog from Excel: ${excelPath}`);
     const workbook = xlsx.readFile(excelPath);
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const products = xlsx.utils.sheet_to_json(sheet);
-    
-    console.log(`Found ${products.length} products in Excel. Syncing to Supabase DB & Vector Store...`);
-    
-    // Clear old vectors linked to the spreadsheet so we don't have dupes after re-embedding
+
+    console.log(`Found ${products.length} products in Excel. Cleaning old data...`);
+
+    // 1. Wipe old data to ensure spreadsheet is absolute source of truth
+    // Wiping everything in documents linked to catalog
     await supabase.from('documents').delete().eq('metadata->>source', 'Excel_Catalog');
+    
+    // Wiping all products to prevent "stuck" generic items
+    const { error: clearError } = await supabase.from('products').delete().neq('sku', '___NON_EXISTENT___');
+    if (clearError) {
+      console.warn("  Warning during cleanup:", clearError.message);
+    }
 
     let successCount = 0;
 
@@ -53,15 +63,44 @@ async function performSync() {
           stock_status: cleanValue(row.stock_status),
         };
 
+        // 0. Build Metadata Object from individual columns or metadata column
         let metadataObj = {};
+        
+        // If there's a JSON metadata column, use it as base
         if (row.metadata) {
           try {
             metadataObj = typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata;
-            payload.metadata = metadataObj;
           } catch (e) {
-            payload.metadata = { raw: cleanValue(row.metadata) };
+            console.warn(`  Warning: Could not parse metadata column for SKU ${row.sku}`);
           }
         }
+
+        // Helper to add column to metadata if present
+        const addToMetadata = (col, targetKey, isArray = false) => {
+          if (row[col] !== undefined && row[col] !== null && row[col] !== '') {
+            if (isArray) {
+              metadataObj[targetKey] = String(row[col]).split(',').map(s => s.trim());
+            } else {
+              metadataObj[targetKey] = cleanValue(row[col]);
+            }
+          }
+        };
+
+        // Map individual columns to metadata
+        addToMetadata('tag', 'tag');
+        addToMetadata('horizonte', 'horizonte');
+        addToMetadata('bu', 'bu');
+        addToMetadata('squad', 'squad');
+        addToMetadata('owner', 'owner');
+        addToMetadata('mercado', 'mercado');
+        addToMetadata('revenue', 'revenue');
+        addToMetadata('pricing', 'pricing');
+        addToMetadata('problem', 'problem');
+        addToMetadata('use_cases', 'useCases', true);
+        addToMetadata('solutions', 'solutions', true);
+        addToMetadata('tech', 'tech', true);
+
+        payload.metadata = metadataObj;
 
         // 1. Upsert Relational Data (Products Table)
         const { error: dbError } = await supabase.from('products').upsert(payload, { onConflict: 'sku' });
@@ -98,12 +137,12 @@ PREÇO: ${pricingText}
     }
     
     console.log(`[${new Date().toISOString()}] Sync complete! Successfully synchronized ${successCount} products.`);
-    console.log("Waiting 5 minutes until next sync...");
+    console.log("Waiting 30 minutes until next sync...");
   } catch (err) {
-    console.error("Error reading excel file:", err.message);
+    console.error("Error during sync process:", err.message);
   }
 }
 
-// Run immediately, then every 5 minutes (300,000 ms)
+// Run immediately, then every 30 minutes (1,800,000 ms)
 performSync();
-setInterval(performSync, 5 * 60 * 1000);
+setInterval(performSync, 30 * 60 * 1000);

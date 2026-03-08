@@ -11,6 +11,10 @@
   --color-ink: #001728;
 }
 
+html {
+  overflow-y: scroll;
+}
+
 @layer base {
   body {
     @apply bg-white text-ink font-display overflow-x-hidden;
@@ -32,16 +36,11 @@
 
 @layer components {
   .glass-card {
-    @apply bg-white/40 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(0,78,255,0.05)] rounded-2xl;
+    @apply bg-white/40 backdrop-blur-xl border border-ink/10 shadow-[0_8px_32px_0_rgba(0,78,255,0.05)] rounded-2xl;
   }
   
   .nav-item {
-    @apply font-mono text-[11px] tracking-widest uppercase text-ink/60 hover:text-primary transition-all cursor-pointer relative py-2;
-  }
-
-  .nav-item.active::after {
-    content: '';
-    @apply absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full;
+    @apply font-mono text-[11px] tracking-widest uppercase text-ink/60 hover:text-primary transition-colors cursor-pointer relative py-2 bg-transparent border-none appearance-none;
   }
 
   .btn-primary {
