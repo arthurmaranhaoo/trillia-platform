@@ -4,18 +4,20 @@ Bem-vindo ao repositório do Trillia Platform, integrando o **Bruce Assistente**
 
 ## Jornada do Usuário
 
-A plataforma Trillia foi desenhada para ser intuitiva, guiando o colaborador desde a descoberta de um produto até o envio de melhorias.
+A plataforma Trillia focada em guiar o colaborador através de horizontes de inovação, desde as soluções amadurecidas até as apostas de futuro.
 
 ```mermaid
 graph LR
-    A[Catálogo de Produtos] --> B[Bruce Assistente]
+    Start[Início] --> A[Catálogo de Produtos]
+    A --> B[Bruce Assistente]
     B --> C[Laboratório de Feedback]
     C --> D[Confirmação de Envio]
 ```
 
 ### Telas Principais
 
-- **Catálogo de Produtos**: Central de visualização de todo o portfólio, com busca e filtros otimizados para rápida localização.
+- **Início**: Portal de entrada com visão consolidada da proposta de valor da plataforma e acesso rápido aos módulos.
+- **Catálogo de Produtos**: Central de visualização do portfólio dividido por **Horizontes (H1, H2 e H3)**, facilitando a navegação entre produtos atuais e inovações futuras.
 - **Bruce Assistente**: Interface de chat inteligente que fornece suporte técnico e comercial baseado em dados reais de produtos e manuais.
 - **Laboratório de Feedback**: Formulário especializado para capturar insights, reportar bugs ou sugerir novas funcionalidades em fluxos guiados.
 
