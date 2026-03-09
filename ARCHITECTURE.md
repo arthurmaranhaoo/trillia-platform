@@ -2,6 +2,64 @@
 
 Este documento detalha o ecossistema tecnológico, as escolhas de engenharia e os modelos de IA que compõem a plataforma Trillia.
 
+## Visual de Arquitetura 🗺️
+
+### Fluxo Geral do Sistema
+```mermaid
+graph TD
+    User((Usuário))
+    
+    subgraph "Frontend (React 19 + Vite)"
+        UI[Interface Bruce Assistente]
+        Form[Laboratório de Feedback]
+    end
+    
+    subgraph "Fontes de Dados (Local)"
+        Excel[(Catalog.xlsx)]
+        DocsDir[[Pasta data/docs]]
+    end
+    
+    subgraph "Processamento (Node.cjs)"
+        Sync[Scripts de Sincronização]
+        Cron[Cron Jobs Automáticos]
+    end
+    
+    subgraph "Inteligência & Backend"
+        Supa[(Supabase PG + Vector)]
+        Gemini[[Google Gemini API]]
+    end
+
+    User --> UI
+    User --> Form
+    Form --> Supa
+    
+    Excel --> Sync
+    DocsDir --> Sync
+    Sync --> Gemini
+    Gemini --> Supa
+    Cron --> Sync
+    
+    UI <--> Gemini
+    Gemini <--> Supa
+```
+
+### Fluxo de RAG (Busca Inteligente)
+```mermaid
+sequenceDiagram
+    participant U as Usuário
+    participant F as Frontend
+    participant G as Gemini API
+    participant S as Supabase (Vector Store)
+
+    U->>F: Faz uma pergunta ("Qual o preço do X?")
+    F->>G: Gera Embedding da Pergunta
+    G->>S: Busca Vetorial (Similarity Search)
+    S-->>G: Retorna Contexto (Produtos/Docs)
+    G->>G: Gera Resposta com Contexto
+    G-->>F: Resposta Formatada
+    F-->>U: Exibe Resposta do Bruce
+```
+
 ---
 
 ## 1. Engenharia de Software (Frontend & Core)
