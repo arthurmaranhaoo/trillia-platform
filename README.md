@@ -56,5 +56,11 @@ O assistente utiliza o modelo **Gemini 2.5 Flash** e técnica de **RAG (Retrieva
 
 ## 🔐 Requisitos de Banco de Dados (Supabase)
 
-Para o sistema de feedback funcionar, certifique-se de que a tabela `feedbacks` existe no seu Supabase com os campos:
-`id`, `created_at`, `nome`, `email`, `categoria`, `mensagem`.
+Para o sistema funcionar (Feedbacks e Bruce Assistente), você precisa configurar o banco:
+
+1.  Acesse o **SQL Editor** no seu painel do Supabase.
+2.  Copie e cole o conteúdo do arquivo [supabase/setup.sql](supabase/setup.sql).
+3.  Execute o script. Isso criará as tabelas `products`, `documents` e `feedbacks`, além de habilitar a busca vetorial.
+
+---
+**Status Final**: 🟢 **Tudo Operacional e Sincronizado!**
