@@ -25,20 +25,21 @@ O "cérebro" da plataforma utiliza o estado da arte em Large Language Models (LL
     - Reconhecimento de intenção (Intent Recognition).
     - Formatação de respostas em Markdown.
     - Personalidade amigável e técnica ("Assistente de Curadoria").
-- **Embeddings**: Modelo `gemini-embedding-001` para transformar textos técnicos da planilha em vetores matemáticos de alta dimensão.
+- **Embeddings**: Modelo `gemini-embedding-001` para transformar textos técnicos da planilha e de documentos (PDF, PPTX, TXT) em vetores matemáticos de alta dimensão.
 
 ---
 
 ## 3. Estratégia de Dados & RAG 🧠
 
-Utilizamos **RAG (Retrieval-Augmented Generation)** para garantir que o Bruce nunca invente informações (alucinação) e responda apenas com base no catálogo real.
+Utilizamos **RAG (Retrieval-Augmented Generation)** para garantir que o Bruce nunca invente informações (alucinação).
 
+- **Busca Vetorial**: Integra dados da planilha de produtos e de documentos externos.
+- **Formatos Suportados**: Além do Excel, o Bruce "lê" arquivos `.pdf`, `.pptx`, `.docx` e `.txt`.
 - **Processo RAG**:
     1. O usuário faz uma pergunta.
     2. O sistema gera um embedding da pergunta.
-    3. Fazemos uma busca vetorial no Supabase para encontrar os produtos mais relevantes.
-    4. Enviamos esses produtos como "contexto" para o Gemini.
-    5. O Gemini gera a resposta baseada estritamente nesse contexto.
+    3. Fazemos uma busca vetorial no Supabase para encontrar os produtos ou documentos mais relevantes.
+    4. Enviamos esse contexto para o Gemini gerar a resposta precisa.
 
 ---
 

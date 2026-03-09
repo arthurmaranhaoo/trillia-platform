@@ -25,32 +25,29 @@ Para rodar o projeto localmente em qualquer máquina:
 
 ---
 
-## 📊 Ecossistema de Planilhas e Sincronização
+## 📊 Gestão de Dados e Conhecimento
 
-O projeto utiliza um sistema de "Fonte Única de Verdade" baseada em Excel para garantir integridade dos dados.
+O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e Documentos (Conhecimento Adicional).
 
-### 1. Sincronização de Catálogo (RAG)
-*   **Arquivo Fonte**: `data/catalog.xlsx`
-*   **Como funciona**: O script de sincronização lê esta planilha e atualiza tanto o banco de dados relacional (Produtos) quanto o banco de vetores (Embeddings para o Bruce).
-*   **Ação Manual**: Para forçar uma atualização imediata do catálogo e do cérebro do Bruce, rode:
+### 1. Cadastro de Produtos (Excel)
+*   **Onde**: `data/catalog.xlsx`
+*   **Ação**: Preencha a planilha com SKUs, Nomes e Preços.
+*   **Sincronizar**: Rode `node scripts/sync_now.cjs`. Isso atualiza o catálogo no site e no cérebro do Bruce.
+
+### 2. Indexação de Documentos (PDF, PPTX, TXT)
+*   **Onde**: Pasta `data/docs/`
+*   **Ação**: Jogue aqui apresentações, PDFs técnicos ou manuais.
+*   **Sincronizar Manual**: Rode `node scripts/ingest_rag.cjs`.
+*   **Automação (Cron)**: O sistema possui um cron que verifica novos arquivos a cada **1 minuto**. Para ativar:
     ```bash
-    node scripts/sync_now.cjs
+    node scripts/cron_rag.cjs
     ```
-*   **Automação (Cron)**: O sistema de sincronização automática mantém os dados sempre frescos.
-
-### 2. Laboratório de Feedbacks
-*   **Fluxo**: O usuário envia uma sugestão no site -> Os dados caem no **Supabase** instantaneamente.
-*   **Exportação para Excel**: Para transformar os feedbacks recebidos em uma planilha de análise, rode:
-    ```bash
-    node scripts/export_feedbacks.cjs
-    ```
-*   **Resultado**: O arquivo será gerado em `data/feedbacks_trillia.xlsx`.
 
 ---
 
 ## 🦾 Bruce Assistente
 
-O assistente utiliza o modelo **Gemini 2.5 Flash** e técnica de **RAG (Retrieval-Augmented Generation)** para responder sobre os produtos do catálogo com precisão absoluta, baseando-se sempre na última versão da planilha de catálogo sincronizada.
+O assistente utiliza o modelo **Gemini 2.5 Flash** e técnica de **RAG**. Ele combina as informações da sua planilha de produtos com os documentos extras da pasta `data/docs/` para dar respostas completas e precisão cirúrgica.
 
 ---
 
