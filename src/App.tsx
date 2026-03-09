@@ -27,7 +27,8 @@ import {
   Layers,
   ChevronDown,
   Maximize2,
-  Minimize2
+  Minimize2,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -71,13 +72,13 @@ const Topbar = ({ activeTab, setActiveTab, onOpenAssistant }: { activeTab: strin
         <button 
           key={item.id}
           onClick={() => setActiveTab(item.id)}
-          className={`nav-item ${activeTab === item.id ? 'text-primary' : ''}`}
+          className={`nav-item relative ${activeTab === item.id ? 'text-primary' : ''}`}
         >
           {item.label}
           {activeTab === item.id && (
             <motion.div 
               layoutId="nav-active"
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
+              className="absolute bottom-[-24px] left-0 right-0 h-0.5 bg-primary rounded-full"
               transition={{ type: "spring", stiffness: 380, damping: 30 }}
             />
           )}
@@ -88,6 +89,20 @@ const Topbar = ({ activeTab, setActiveTab, onOpenAssistant }: { activeTab: strin
         className="nav-item"
       >
         // ASSISTENTE
+      </button>
+      <button 
+        onClick={() => setActiveTab('sugestoes')}
+        className={`nav-item flex items-center gap-2 group ${activeTab === 'sugestoes' ? 'text-primary' : ''}`}
+      >
+        // LABORATÓRIO
+        <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-primary text-[8px] font-black tracking-tighter group-hover:bg-primary group-hover:text-white transition-all">BETA</span>
+        {activeTab === 'sugestoes' && (
+          <motion.div 
+            layoutId="nav-active"
+            className="absolute bottom-[-24px] left-0 right-0 h-0.5 bg-primary rounded-full"
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          />
+        )}
       </button>
     </nav>
     <div className="flex items-center gap-4">
@@ -199,6 +214,339 @@ const Machinery = () => (
     <div className="w-[38px] h-[38px] absolute border-t-4 border-surface bg-accent-green/40 animate-slide-v [animation-delay:2.2s] bottom-0 right-1/4" />
   </div>
 );
+
+const SuggestionsView = () => {
+    const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+    const [formData, setFormData] = useState({
+        nome: '',
+        email: '',
+        categoria: 'Feedback',
+        mensagem: ''
+    });
+
+    const categories = ['Feedback', 'Bug / Erro', 'Novo Produto', 'Funcionalidade'];
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        // Validação extra segurança
+        if (!formData.nome.trim() || !formData.email.trim() || !formData.mensagem.trim()) {
+            alert("Por favor, preencha todos os campos antes de enviar.");
+            return;
+        }
+
+        setStatus('submitting');
+        
+        try {
+            const { error } = await supabase
+                .from('feedbacks')
+                .insert([
+                    {
+                        nome: formData.nome,
+                        email: formData.email,
+                        categoria: formData.categoria,
+                        mensagem: formData.mensagem
+                    }
+                ]);
+
+            if (error) throw error;
+            setStatus('success');
+            setFormData({ nome: '', email: '', categoria: 'Feedback', mensagem: '' });
+        } catch (err) {
+            console.error("Error submitting feedback:", err);
+            setStatus('idle');
+            alert("Erro ao enviar feedback. Certifique-se de que a tabela 'feedbacks' existe no Supabase.");
+        }
+    };
+
+    const SuccessModal = () => {
+        useEffect(() => {
+            const handleEsc = (e: KeyboardEvent) => {
+                if (e.key === 'Escape') setStatus('idle');
+            };
+            window.addEventListener('keydown', handleEsc);
+            return () => window.removeEventListener('keydown', handleEsc);
+        }, []);
+
+        return (
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-white/60 backdrop-blur-md"
+                onClick={() => setStatus('idle')}
+            >
+                <motion.div 
+                    initial={{ scale: 0.95, y: 10 }}
+                    animate={{ scale: 1, y: 0 }}
+                    className="bg-white p-12 max-w-md w-full text-center space-y-6 border border-primary/20 shadow-2xl rounded-3xl relative"
+                    onClick={e => e.stopPropagation()}
+                >
+                    <div className="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center mx-auto">
+                        <Send size={32} className="text-primary" />
+                    </div>
+                    <div className="space-y-2">
+                        <h3 className="text-2xl font-black uppercase tracking-tight text-ink">Sugestão Recebida!</h3>
+                        <p className="text-ink/60 text-sm leading-relaxed">
+                            Sua contribuição foi registrada com sucesso e será revisada pelo time de produto.
+                        </p>
+                    </div>
+                    <button 
+                        onClick={() => setStatus('idle')}
+                        className="w-full py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                    >
+                        Entendido
+                    </button>
+                </motion.div>
+            </motion.div>
+        );
+    };
+
+    return (
+        <div className="p-6 lg:p-12 max-w-[1600px] mx-auto space-y-16">
+            <header className="space-y-6">
+                <div className="flex items-center gap-2">
+                    <div className="h-[1px] w-8 bg-primary" />
+                    <span className="font-mono text-[10px] text-primary font-bold tracking-widest uppercase">LABORATÓRIO DE FEEDBACK</span>
+                </div>
+                <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tighter leading-none">
+                    BETA <span className="text-primary">SUGESTÕES</span>
+                </h1>
+                <p className="text-lg text-ink/50 leading-relaxed max-w-2xl">
+                    Sua visão ajuda a moldar o futuro do Trillia. Quer sugerir um novo produto, reportar um bug ou apenas dar um feedback? Este é o seu espaço.
+                </p>
+            </header>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-stretch">
+                <div className="md:col-span-2 flex">
+                    <form onSubmit={handleSubmit} className="w-full space-y-8 glass-card p-10 border-ink/15 flex flex-col">
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3 text-primary mb-2">
+                                <h3 className="text-xl font-black uppercase tracking-tight">Cadastro</h3>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-mono font-bold text-primary uppercase tracking-widest">Seu Nome</label>
+                                <input 
+                                    required
+                                    type="text" 
+                                    value={formData.nome}
+                                    onChange={e => setFormData({...formData, nome: e.target.value})}
+                                    placeholder="Arthur Maranhão"
+                                    className="w-full bg-surface/50 border border-ink/15 rounded-xl px-5 py-3 text-sm focus:outline-none focus:border-primary transition-all text-ink/80"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-mono font-bold text-primary uppercase tracking-widest">E-mail Corporativo</label>
+                                <input 
+                                    required
+                                    type="email" 
+                                    value={formData.email}
+                                    onChange={e => setFormData({...formData, email: e.target.value})}
+                                    placeholder="seu.email@trilliab3.com.br"
+                                    className="w-full bg-surface/50 border border-ink/15 rounded-xl px-5 py-3 text-sm focus:outline-none focus:border-primary transition-all text-ink/80"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-mono font-bold text-primary uppercase tracking-widest">O que você quer registrar?</label>
+                            <div className="relative">
+                                <select 
+                                    required
+                                    value={formData.categoria}
+                                    onChange={e => setFormData({...formData, categoria: e.target.value})}
+                                    className="w-full bg-surface/50 border border-ink/15 rounded-xl px-5 py-3 text-sm focus:outline-none focus:border-primary transition-all appearance-none cursor-pointer"
+                                >
+                                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                                <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-ink/30 pointer-events-none" size={16} />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-mono font-bold text-primary uppercase tracking-widest">Detalhe sua ideia ou feedback</label>
+                            <textarea 
+                                required
+                                value={formData.mensagem}
+                                onChange={e => setFormData({...formData, mensagem: e.target.value})}
+                                placeholder="Descreva aqui com o máximo de detalhes..."
+                                rows={6}
+                                className="w-full bg-surface/50 border border-ink/15 rounded-xl px-5 py-3 text-sm focus:outline-none focus:border-primary transition-all resize-none"
+                            />
+                        </div>
+
+                        <button 
+                            disabled={status !== 'idle'}
+                            className="w-full py-4 bg-ink text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-primary transition-all shadow-xl hover:shadow-primary/20 disabled:opacity-50"
+                        >
+                            {status === 'idle' && <><Send size={16} className="text-accent-green" /> Enviar para Curadoria</>}
+                            {status === 'submitting' && <><RefreshCw size={16} className="animate-spin text-accent-green" /> Processando envio...</>}
+                        </button>
+
+                        <div className="flex items-center gap-2 p-4 bg-primary/5 rounded-xl border border-primary/10">
+                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                            <p className="text-[9px] font-mono font-bold text-primary/60 uppercase tracking-widest">
+                                Curadoria Humana: Todas as sugestões são revisadas antes de entrar no catálogo.
+                            </p>
+                        </div>
+                    </form>
+                </div>
+
+                <AnimatePresence>
+                    {status === 'success' && <SuccessModal />}
+                </AnimatePresence>
+
+                <AnimatePresence mode="wait">
+                    {formData.categoria === 'Novo Produto' ? (
+                        <motion.div 
+                            key="guidance-product"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            className="h-full"
+                        >
+                            <div className="p-8 glass-card border-ink/15 space-y-6 h-full flex flex-col">
+                                <div className="flex items-center gap-3 text-primary">
+                                    <Plus size={28} />
+                                    <h3 className="text-2xl font-black uppercase tracking-tight">Guia de Novo Produto</h3>
+                                </div>
+                                <p className="text-sm text-ink/60 leading-relaxed">
+                                    Para que um produto apareça no catálogo e seja compreendido pelo <strong>Bruce Assistente</strong>, precisamos dos seguintes dados:
+                                </p>
+                                <ul className="space-y-6">
+                                    {[
+                                        { field: 'Identificação', items: 'SKU único, Nome Comercial, Responsável' },
+                                        { field: 'Posicionamento', items: 'BU, Squad, Horizonte (H1, H2, H3)' },
+                                        { field: 'Detalhamento', items: 'Problema, Solução, Use Cases, Stack Tech' },
+                                        { field: 'Comercial', items: 'Mercado, Modelo de Pricing e Revenue' },
+                                        { field: 'Indexação (Enxoval)', items: 'Links de Documentos, Deck de Venda, FAQ' }
+                                    ].map((g, i) => (
+                                        <li key={i} className="space-y-2">
+                                            <p className="text-[12px] font-mono font-bold text-primary uppercase tracking-widest">{g.field}</p>
+                                            <p className="text-sm text-ink/40 leading-none">{g.items}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="pt-4 border-t border-ink/5 mt-auto">
+                                    <p className="text-[11px] font-mono text-ink/30 italic leading-relaxed">
+                                        * A qualidade desses dados define a precisão com que o Bruce Assistente responderá sobre seu produto.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ) : formData.categoria === 'Bug / Erro' ? (
+                        <motion.div 
+                            key="guidance-bug"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            className="h-full"
+                        >
+                            <div className="p-8 glass-card border-primary/20 space-y-6 h-full flex flex-col">
+                                <div className="flex items-center gap-3 text-primary">
+                                    <AlertCircle size={28} />
+                                    <h3 className="text-2xl font-black uppercase tracking-tight">Guia de Reporte de Bug</h3>
+                                </div>
+                                <p className="text-sm text-ink/60 leading-relaxed">
+                                    Ajude nosso time técnico a identificar e corrigir o problema rapidamente fornecendo:
+                                </p>
+                                <ul className="space-y-6">
+                                    {[
+                                        { field: 'Contexto', items: 'Onde ocorreu? (Módulo, Página, Squad)' },
+                                        { field: 'Reprodução', items: 'Passo a passo para o erro acontecer' },
+                                        { field: 'Evidência', items: 'Mensagem de erro ou comportamento esperado' },
+                                        { field: 'Impacto', items: 'O erro trava o uso ou é apenas visual?' }
+                                    ].map((g, i) => (
+                                        <li key={i} className="space-y-2">
+                                            <p className="text-[12px] font-mono font-bold text-primary uppercase tracking-widest">{g.field}</p>
+                                            <p className="text-sm text-ink/40 leading-none">{g.items}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="pt-4 border-t border-ink/5 mt-auto">
+                                    <p className="text-[11px] font-mono text-ink/30 italic leading-relaxed">
+                                        * Bugs reportados com clareza são priorizados em nossos ciclos de sustentação.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ) : formData.categoria === 'Funcionalidade' ? (
+                        <motion.div 
+                            key="guidance-feature"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            className="h-full"
+                        >
+                            <div className="p-8 glass-card border-primary/20 space-y-6 h-full flex flex-col">
+                                <div className="flex items-center gap-3 text-primary">
+                                    <Cpu size={28} />
+                                    <h3 className="text-2xl font-black uppercase tracking-tight">Guia de Funcionalidade</h3>
+                                </div>
+                                <p className="text-sm text-ink/60 leading-relaxed">
+                                    Como podemos tornar este site ainda mais útil para o dia a dia da nossa equipe?
+                                </p>
+                                <ul className="space-y-6">
+                                    {[
+                                        { field: 'Apoio à Equipe', items: 'Que nova ferramenta facilitaria sua rotina?' },
+                                        { field: 'Fluxo Interno', items: 'Como podemos otimizar a gestão do nosso catálogo?' },
+                                        { field: 'Inteligência', items: 'Que novos insights o Bruce Assistente poderia nos entregar?' },
+                                        { field: 'Integração', items: 'Falta algum dado ou conexão com outro sistema nosso?' }
+                                    ].map((g, i) => (
+                                        <li key={i} className="space-y-2">
+                                            <p className="text-[12px] font-mono font-bold text-primary uppercase tracking-widest">{g.field}</p>
+                                            <p className="text-sm text-ink/40 leading-none">{g.items}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="pt-4 border-t border-ink/5 mt-auto">
+                                    <p className="text-[11px] font-mono text-ink/30 italic leading-relaxed">
+                                        * FOCO: Melhorias exclusivas para consumo interno da nossa equipe.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <motion.div 
+                            key="standard-feedback"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="h-full"
+                        >
+                            <div className="p-8 glass-card border-ink/15 space-y-6 h-full flex flex-col">
+                                <div className="flex items-center gap-3 text-primary">
+                                    <MessageSquare size={28} />
+                                    <h3 className="text-2xl font-black uppercase tracking-tight">Guia de Feedback</h3>
+                                </div>
+                                <p className="text-sm text-ink/60 leading-relaxed">
+                                    Para um feedback construtivo, tente incluir os seguintes pontos:
+                                </p>
+                                <ul className="space-y-6">
+                                    {[
+                                        { field: 'Contexto', items: 'Em que parte ou fluxo do site você encontrou essa dificuldade?' },
+                                        { field: 'Oportunidade', items: 'O que podemos mudar para tornar o uso do site mais intuitivo para você?' },
+                                        { field: 'Impacto', items: 'Qual o ganho real de tempo ou produtividade para você no dia a dia?' },
+                                        { field: 'Referência', items: 'Existem outras ferramentas que você já utiliza de forma fluida?' }
+                                    ].map((g, i) => (
+                                        <li key={i} className="space-y-2">
+                                            <p className="text-[12px] font-mono font-bold text-primary uppercase tracking-widest">{g.field}</p>
+                                            <p className="text-sm text-ink/40 leading-none">{g.items}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="pt-4 border-t border-ink/5 mt-auto">
+                                    <p className="text-[11px] font-mono text-ink/30 italic leading-relaxed">
+                                        * Acompanhe a evolução do Trillia através do nosso changelog interno.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </div>
+    );
+};
 
 const BruceIcon = () => (
   <div className="grid grid-cols-2 gap-1">
@@ -1671,6 +2019,7 @@ export default function App() {
               {activeTab === 'inicio' && <HomeView onNavigate={handleNavigate} />}
               {activeTab === 'horizontes' && <HorizontesView />}
               {activeTab === 'catalogo' && <CatalogView />}
+              {activeTab === 'sugestoes' && <SuggestionsView />}
               {activeTab === 'config' && (
                 <div className="p-20 text-center space-y-6">
                   <Settings size={64} className="mx-auto text-ink/10" />

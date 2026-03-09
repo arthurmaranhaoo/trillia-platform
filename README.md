@@ -1,20 +1,60 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Trillia Platform - Bruce Assistente 🚀
 
-# Run and deploy your AI Studio app
+Bem-vindo ao repositório do Trillia Platform, integrando o **Bruce Assistente** com inteligência artificial e um ecossistema de dados automatizado.
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/0f7f8bba-337a-4d88-898a-88cfb00a4756
+## 🛠️ Configuração e Execução
 
-## Run Locally
+Para rodar o projeto localmente em qualquer máquina:
 
-**Prerequisites:**  Node.js
+1.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
+2.  **Configure as Variáveis de Ambiente:**
+    Crie um arquivo `.env` na raiz do projeto (use o `.env.example` como base) com as seguintes chaves:
+    *   `VITE_GEMINI_API_KEY`: Sua chave de API do Google Gemini.
+    *   `VITE_SUPABASE_URL`: A URL do seu projeto Supabase.
+    *   `VITE_SUPABASE_ANON_KEY`: A chave anon/public do seu Supabase.
 
+3.  **Inicie o Servidor de Desenvolvimento:**
+    ```bash
+    npm run dev
+    ```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+
+## 📊 Ecossistema de Planilhas e Sincronização
+
+O projeto utiliza um sistema de "Fonte Única de Verdade" baseada em Excel para garantir integridade dos dados.
+
+### 1. Sincronização de Catálogo (RAG)
+*   **Arquivo Fonte**: `data/catalog.xlsx`
+*   **Como funciona**: O script de sincronização lê esta planilha e atualiza tanto o banco de dados relacional (Produtos) quanto o banco de vetores (Embeddings para o Bruce).
+*   **Ação Manual**: Para forçar uma atualização imediata, rode:
+    ```bash
+    node scripts/sync_catalog.js
+    ```
+*   **Automação (Cron)**: O sistema de sincronização automática mantém os dados sempre frescos.
+
+### 2. Laboratório de Feedbacks
+*   **Fluxo**: O usuário envia uma sugestão no site -> Os dados caem no **Supabase** instantaneamente.
+*   **Exportação para Excel**: Para transformar os feedbacks recebidos em uma planilha de análise, rode:
+    ```bash
+    node scripts/export_feedbacks.cjs
+    ```
+*   **Resultado**: O arquivo será gerado em `data/feedbacks_trillia.xlsx`.
+
+---
+
+## 🦾 Bruce Assistente
+
+O assistente utiliza o modelo **Gemini 2.5 Flash** e técnica de **RAG (Retrieval-Augmented Generation)** para responder sobre os produtos do catálogo com precisão absoluta, baseando-se sempre na última versão da planilha de catálogo sincronizada.
+
+---
+
+## 🔐 Requisitos de Banco de Dados (Supabase)
+
+Para o sistema de feedback funcionar, certifique-se de que a tabela `feedbacks` existe no seu Supabase com os campos:
+`id`, `created_at`, `nome`, `email`, `categoria`, `mensagem`.
