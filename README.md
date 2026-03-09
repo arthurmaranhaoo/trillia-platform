@@ -1,10 +1,36 @@
-# Trillia Platform - Bruce Assistente 🚀
+# Trillia Platform - Bruce Assistente
 
 Bem-vindo ao repositório do Trillia Platform, integrando o **Bruce Assistente** com inteligência artificial e um ecossistema de dados automatizado.
 
+## Visão Geral do Sistema
+
+```mermaid
+graph LR
+    subgraph "Entradas de Dados"
+        Excel[Catalog.xlsx]
+        Docs[Pasta data/docs]
+    end
+    
+    subgraph "Processamento Inteligente"
+        Sync[Scripts de Sincronização]
+        RAG[Base de Conhecimento RAG]
+    end
+    
+    subgraph "Interface do Usuário"
+        Bruce[Bruce Assistente]
+        Lab[Laboratório de Feedback]
+    end
+
+    Excel --> Sync
+    Docs --> Sync
+    Sync --> RAG
+    RAG <--> Bruce
+    Lab --> Bruce
+```
+
 ---
 
-## 🛠️ Configuração e Execução
+## Configuracao e Execucao
 
 Para rodar o projeto localmente em qualquer máquina:
 
@@ -25,7 +51,7 @@ Para rodar o projeto localmente em qualquer máquina:
 
 ---
 
-## 📊 Gestão de Dados e Conhecimento
+## Gestao de Dados e Conhecimento
 
 O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e Documentos (Conhecimento Adicional).
 
@@ -45,13 +71,13 @@ O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e
 
 ---
 
-## 🦾 Bruce Assistente
+## Bruce Assistente
 
 O assistente utiliza o modelo **Gemini 2.5 Flash** e técnica de **RAG**. Ele combina as informações da sua planilha de produtos com os documentos extras da pasta `data/docs/` para dar respostas completas e precisão cirúrgica.
 
 ---
 
-## 🔐 Requisitos de Banco de Dados (Supabase)
+## Requisitos de Banco de Dados (Supabase)
 
 Para o sistema funcionar (Feedbacks e Bruce Assistente), você precisa configurar o banco:
 
@@ -60,4 +86,4 @@ Para o sistema funcionar (Feedbacks e Bruce Assistente), você precisa configura
 3.  Execute o script. Isso criará as tabelas `products`, `documents` e `feedbacks`, além de habilitar a busca vetorial.
 
 ---
-**Status Final**: 🟢 **Tudo Operacional e Sincronizado!**
+**Status Final**: **Tudo Operacional e Sincronizado!**

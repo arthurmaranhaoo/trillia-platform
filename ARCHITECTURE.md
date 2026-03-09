@@ -1,8 +1,8 @@
-# Arquitetura Técnica - Trillia Platform & Bruce Assistente 🏗️
+# Arquitetura Tecnica - Trillia Platform & Bruce Assistente
 
 Este documento detalha o ecossistema tecnológico, as escolhas de engenharia e os modelos de IA que compõem a plataforma Trillia.
 
-## Visual de Arquitetura 🗺️
+## Visual de Arquitetura
 
 ### Fluxo Geral do Sistema
 ```mermaid
@@ -87,7 +87,7 @@ O "cérebro" da plataforma utiliza o estado da arte em Large Language Models (LL
 
 ---
 
-## 3. Estratégia de Dados & RAG 🧠
+## 3. Estrategia de Dados & RAG
 
 Utilizamos **RAG (Retrieval-Augmented Generation)** para garantir que o Bruce nunca invente informações (alucinação).
 
@@ -111,7 +111,7 @@ Utilizamos o **Supabase** como plataforma de backend as a service, provendo:
 
 ---
 
-## 5. Ecossistema de Integração (Single Source of Truth)
+## 5. Ecossistema de Integracao (Single Source of Truth)
 
 O projeto inova ao utilizar o **Excel como fonte primária de verdade**, facilitando a gestão por pessoas não-técnicas.
 
@@ -124,7 +124,7 @@ O projeto inova ao utilizar o **Excel como fonte primária de verdade**, facilit
 
 ---
 
-## 6. Stack Tecnológica (Ferramentas)
+## 6. Stack Tecnologica (Ferramentas)
 
 | Camada | Tecnologia |
 | :--- | :--- |
@@ -137,4 +137,4 @@ O projeto inova ao utilizar o **Excel como fonte primária de verdade**, facilit
 | **Deployment** | Git / GitHub Versioning |
 
 ---
-**Arquitetura desenhada para: Escalabilidade, Precisão de Dados e Experiência de Usuário de Elite.**
+**Arquitetura desenhada para: Escalabilidade, Precisao de Dados e Experiencia de Usuario de Elite.**
