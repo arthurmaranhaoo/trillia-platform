@@ -2,31 +2,22 @@
 
 Bem-vindo ao repositório do Trillia Platform, integrando o **Bruce Assistente** com inteligência artificial e um ecossistema de dados automatizado.
 
-## Visão Geral do Sistema
+## Jornada do Usuário
+
+A plataforma Trillia foi desenhada para ser intuitiva, guiando o colaborador desde a descoberta de um produto até o envio de melhorias.
 
 ```mermaid
 graph LR
-    subgraph "Entradas de Dados"
-        Excel[Catalog.xlsx]
-        Docs[Pasta data/docs]
-    end
-    
-    subgraph "Processamento Inteligente"
-        Sync[Scripts de Sincronização]
-        RAG[Base de Conhecimento RAG]
-    end
-    
-    subgraph "Interface do Usuário"
-        Bruce[Bruce Assistente]
-        Lab[Laboratório de Feedback]
-    end
-
-    Excel --> Sync
-    Docs --> Sync
-    Sync --> RAG
-    RAG <--> Bruce
-    Lab --> Bruce
+    A[Catálogo de Produtos] --> B[Bruce Assistente]
+    B --> C[Laboratório de Feedback]
+    C --> D[Confirmação de Envio]
 ```
+
+### Telas Principais
+
+- **Catálogo de Produtos**: Central de visualização de todo o portfólio, com busca e filtros otimizados para rápida localização.
+- **Bruce Assistente**: Interface de chat inteligente que fornece suporte técnico e comercial baseado em dados reais de produtos e manuais.
+- **Laboratório de Feedback**: Formulário especializado para capturar insights, reportar bugs ou sugerir novas funcionalidades em fluxos guiados.
 
 ---
 
@@ -68,12 +59,6 @@ O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e
     ```bash
     node scripts/cron_rag.cjs
     ```
-
----
-
-## Bruce Assistente
-
-O assistente utiliza o modelo **Gemini 2.5 Flash** e técnica de **RAG**. Ele combina as informações da sua planilha de produtos com os documentos extras da pasta `data/docs/` para dar respostas completas e precisão cirúrgica.
 
 ---
 
