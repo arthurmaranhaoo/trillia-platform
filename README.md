@@ -32,9 +32,9 @@ O projeto utiliza um sistema de "Fonte Única de Verdade" baseada em Excel para 
 ### 1. Sincronização de Catálogo (RAG)
 *   **Arquivo Fonte**: `data/catalog.xlsx`
 *   **Como funciona**: O script de sincronização lê esta planilha e atualiza tanto o banco de dados relacional (Produtos) quanto o banco de vetores (Embeddings para o Bruce).
-*   **Ação Manual**: Para forçar uma atualização imediata, rode:
+*   **Ação Manual**: Para forçar uma atualização imediata do catálogo e do cérebro do Bruce, rode:
     ```bash
-    node scripts/sync_catalog.js
+    node scripts/sync_now.cjs
     ```
 *   **Automação (Cron)**: O sistema de sincronização automática mantém os dados sempre frescos.
 
