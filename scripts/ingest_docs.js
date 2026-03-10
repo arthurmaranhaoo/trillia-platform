@@ -3,13 +3,17 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse');
+import officeparser from 'officeparser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const geminiApiKey = process.env.GEMINI_API_KEY;
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const geminiApiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
 if (!supabaseUrl || !supabaseKey || !geminiApiKey) {
   console.error("Error: Missing required environment variables.");
@@ -34,9 +38,25 @@ function chunkText(text, chunkSize = 1000, overlap = 100) {
 async function processFile(filepath) {
   console.log(`Processing ${filepath}...`);
   const filename = path.basename(filepath);
+  const ext = path.extname(filepath).toLowerCase();
   
   try {
-    const text = fs.readFileSync(filepath, 'utf8');
+    let text = '';
+    
+    if (ext === '.pdf') {
+        const dataBuffer = fs.readFileSync(filepath);
+        const data = await pdfParse(dataBuffer);
+        text = data.text;
+    } else if (ext === '.pptx' || ext === '.docx') {
+        const raw = await officeparser.parseOffice(filepath);
+        text = raw.toText ? raw.toText() : String(raw);
+    } else if (ext === '.txt' || ext === '.md' || ext === '.csv') {
+        text = fs.readFileSync(filepath, 'utf8');
+    } else {
+        console.log(`  Skipping unsupported file type: ${ext}`);
+        return;
+    }
+
     const chunks = chunkText(text);
 
     for (let i = 0; i < chunks.length; i++) {
@@ -78,7 +98,9 @@ async function main() {
   const files = fs.readdirSync(docsDir);
 
   for (const file of files) {
-    if (file.endsWith('.txt')) {
+    const ext = path.extname(file).toLowerCase();
+    const validExts = ['.txt', '.md', '.csv', '.pdf', '.pptx', '.docx'];
+    if (validExts.includes(ext)) {
       const filepath = path.join(docsDir, file);
       await processFile(filepath);
     }
