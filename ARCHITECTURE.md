@@ -39,7 +39,7 @@ graph TD
     GeminiEmb --> SupaVec[(Supabase Vector)]
     
     User --> UI[Interface Bruce]
-    UI <--> GeminiFlash[[Gemini 2.5 Flash]]
+    UI <--> GeminiFlash[[Gemini 2.0 Flash]]
     GeminiFlash <--> SupaVec
 ```
 
@@ -78,8 +78,8 @@ A plataforma foi construída seguindo princípios de **Modern Web Performance** 
 
 O "cérebro" da plataforma utiliza o estado da arte em Large Language Models (LLMs) do Google.
 
-- **Modelo de Chat**: **Gemini 2.5 Flash**. Escolhido pelo equilíbrio perfeito entre baixa latência e raciocínio complexo.
-- **Estrutura de Custos (Gemini 1.5/2.5 Flash)**:
+- **Modelo de Chat**: **Gemini 2.0 Flash**. Escolhido pelo equilíbrio perfeito entre baixa latência e raciocínio complexo.
+- **Estrutura de Custos (Gemini 2.0 Flash)**:
     - **Input**: ~$0.075 por 1 milhão de tokens.
     - **Output**: ~$0.30 por 1 milhão de tokens.
     - **Contexto**: Suporta até 1M+ de tokens, ideal para RAG extensivo.
@@ -139,7 +139,7 @@ O projeto inova ao utilizar o **Excel como fonte primária de verdade**, facilit
 | Camada | Tecnologia |
 | :--- | :--- |
 | **Frontend** | React, Vite, Framer Motion, Lucide |
-| **IA Chat** | Google Gemini 2.5 Flash |
+| **IA Chat** | Google Gemini 2.0 Flash |
 | **IA Vector** | Google Gemini Embeddings |
 | **Database** | Supabase (PostgreSQL + pgvector) |
 | **Scripts** | Node.js (CommonJS & ESM) |
