@@ -18,7 +18,7 @@ create table if not exists products (
 
 -- 3. Tabela de Documentos (Base de Conhecimento RAG / Vetores)
 create table if not exists documents (
-    id bigint generated desktop default as identity primary key,
+    id bigint generated always as identity primary key,
     content text not null,
     metadata jsonb default '{}'::jsonb,
     embedding vector(768) -- Dimensão padrão para o modelo gemini-embedding-001
