@@ -137,12 +137,30 @@ PREÇO: ${pricingText}
     }
     
     console.log(`[${new Date().toISOString()}] Sync complete! Successfully synchronized ${successCount} products.`);
-    console.log("Aguardando 24 horas até a próxima sincronização programada...");
+    scheduleNextMidnightRun();
   } catch (err) {
     console.error("Error during sync process:", err.message);
   }
 }
 
-// Run immediately, then every 24 hours (86,400,000 ms)
+function scheduleNextMidnightRun() {
+  const now = new Date();
+  const nextMidnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1, // Tomorrow
+    0, 0, 0, 0 // 00:00:00
+  );
+
+  const msUntilMidnight = nextMidnight.getTime() - now.getTime();
+  
+  console.log(`⏳ Agendado: Próxima sincronização ocorrerá à meia-noite (em aprox. ${(msUntilMidnight / 1000 / 60 / 60).toFixed(2)} horas).`);
+  
+  setTimeout(() => {
+    performSync(); // Run at midnight, which will then recursively schedule the next midnight
+  }, msUntilMidnight);
+}
+
+// Run immediately on boot, then schedule for every midnight
+console.log("🚀 Iniciando servidor de sincronização do Catálogo...");
 performSync();
-setInterval(performSync, 24 * 60 * 60 * 1000);

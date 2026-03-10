@@ -14,9 +14,27 @@ async function runInterval() {
     } catch (err) {
         console.error("❌ Erro durante a execução automática:", err.message);
     }
-    console.log("😴 Aguardando 24 horas para a próxima verificação...");
+    
+    scheduleNextMidnightRun();
 }
 
-// Roda imediatamente e depois a cada 24 horas (86.400.000 ms)
+function scheduleNextMidnightRun() {
+    const now = new Date();
+    const nextMidnight = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 1, // Amanhã
+        0, 0, 0, 0 // Meia-noite em ponto
+    );
+
+    const msUntilMidnight = nextMidnight.getTime() - now.getTime();
+    console.log(`😴 Agendado: Próxima verificação de PDFs/PPTXs ocorrerá à meia-noite (em aprox. ${(msUntilMidnight / 1000 / 60 / 60).toFixed(2)} horas).`);
+
+    setTimeout(() => {
+        runInterval(); // Roda à meia-noite, e então se agenda de novo
+    }, msUntilMidnight);
+}
+
+// Roda imediatamente no start do servidor, depois agenda para toda meia-noite
+console.log("🚀 Iniciando motor de OCR (PDF/PPTX)...");
 runInterval();
-setInterval(runInterval, 24 * 60 * 60 * 1000);
