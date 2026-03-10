@@ -1155,8 +1155,10 @@ const CatalogView = () => {
                         {selectedProduct.tag}
                       </span>
                       <a 
-                        href="#" 
-                        onClick={(e) => e.preventDefault()}
+                        href={selectedProduct.enxoval_link || "#"} 
+                        target={selectedProduct.enxoval_link ? "_blank" : "_self"}
+                        rel="noopener noreferrer"
+                        onClick={(e) => !selectedProduct.enxoval_link && e.preventDefault()}
                         className="flex items-center gap-2 text-[10px] font-mono font-bold text-primary uppercase tracking-widest hover:underline"
                       >
                         <Paperclip size={14} /> Enxoval do Produto
