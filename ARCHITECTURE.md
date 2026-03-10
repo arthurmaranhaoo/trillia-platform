@@ -25,21 +25,23 @@ graph TD
     end
     
     subgraph "Inteligência & Backend"
-        Supa[(Supabase PG + Vector)]
+        Supa[(Supabase PG)]
+        SupaVec[(Supabase Vector)]
         Gemini[[Google Gemini API]]
     end
 
     User --> UI
     User --> Form
     Form --> Supa
+    Supa --> Export[Export Script]
+    Export --> ExcelFeed[(feedbacks.xlsx)]
     
     Excel[(Catalog.xlsx)] --> Sync[Sync Script]
     DocsDir --> Ingest[Ingest Script]
     Ingest --> Parsers[[pdf-parse / officeparser]]
     Parsers --> GeminiEmb[Gemini Embedding]
     Sync --> GeminiEmb
-    Sync --> SupaRel[(Supabase Products)]
-    GeminiEmb --> SupaVec[(Supabase Vector)]
+    Sync --> Supa
     
     User --> UI[Interface Bruce]
     UI <--> GeminiFlash[[Gemini 2.5 Flash]]
@@ -118,8 +120,8 @@ Utilizamos **RAG (Retrieval-Augmented Generation)** para garantir que o Bruce nu
 Utilizamos o **Supabase** como plataforma de backend as a service, provendo:
 
 - **Relacional**: PostgreSQL para armazenar os produtos estruturados e o log de feedbacks.
-- **Vetorial**: Extensão `pgvector` para armazenar os embeddings do catálogo.
-- **Feedback Loop**: Tabela `feedbacks` projetada para escalabilidade, permitindo captura instantânea de sugestões do Laboratório.
+- **Vetorial**: Extensão `pgvector` para armazenar os embeddings do catálogo e de documentos da RAG.
+- **Feedback Loop**: Tabela `feedbacks` projetada para escalabilidade. O frontend insere os relatórios diretamente na nuvem (evitando corrupção de arquivos lidos simultaneamente) e os administradores consomem essa tabela utilizando o script Node.js offline (`export_feedbacks.cjs`) que converte os registros em uma planilha `feedbacks_trillia.xlsx` auditável.
 
 ---
 

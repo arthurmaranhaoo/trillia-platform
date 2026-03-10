@@ -70,6 +70,14 @@ O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e
     node scripts/cron_rag.cjs
     ```
 
+### 3. Gestão e Exportação de Feedbacks
+*   **Armazenamento (Nuvem)**: Quando um colaborador envia um relatório pelo "Laboratório de Feedback", a requisição é salva diretamente na tabela `feedbacks` no banco relacional Supabase. Ela **não** vai para uma planilha local para evitar corrupções em acessos simultâneos.
+*   **Exportação Local (Excel)**: Para que os administradores analisem os dados off-line, basta rodar o script de exportação:
+    ```bash
+    node scripts/export_feedbacks.cjs
+    ```
+    *Isso fará o download de todas as linhas do banco e gerará o arquivo `data/feedbacks_trillia.xlsx` pronto para auditoria.*
+
 ---
 
 ## Requisitos de Banco de Dados (Supabase)
