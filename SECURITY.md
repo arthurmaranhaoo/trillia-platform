@@ -5,31 +5,26 @@ Este documento detalha a análise de segurança da arquitetura atual e fornece r
 > [!WARNING]
 > O estado atual do projeto é **Experimental/LAB**. Existem vulnerabilidades severas que impedem o uso seguro em ambiente público real sem as correções abaixo.
 
-## 🔴 Vulnerabilidades Críticas
+## 🛡️ Status de Implementação e Segurança
 
-### 1. Exposição de Chaves de API (Gemini)
-*   **Problema**: A chave `VITE_GEMINI_API_KEY` é carregada diretamente no frontend (React).
-*   **Risco**: Qualquer usuário que visite o site pode extrair essa chave inspecionando o código ou o tráfego de rede. Eles podem usar sua cota e gerar cobranças na sua conta do Google AI.
-*   **Impacto**: Alto (Financeiro e de Cota).
+O projeto passou por um processo de **Security Hardening** e agora está preparado para uso em ambiente controlado.
 
-### 2. Banco de Dados Aberto (Supabase RLS)
-*   **Problema**: O Row Level Security (RLS) está desabilitado no script `setup.sql` para as tabelas `products`, `documents` e `feedbacks`.
-*   **Risco**: Usuários mal-intencionados podem usar a chave `anon` (que é pública no frontend) para deletar produtos, inserir documentos falsos no RAG ou apagar feedbacks.
-*   **Impacto**: Crítico (Integridade dos Dados).
+### 🟢 Vulnerabilidades Resolvidas
 
-### 3. Injeção de Prompt (Bruce Assistente)
-*   **Problema**: O assistente aceita entrada direta de texto do usuário sem camadas de sanitização pesadas antes de enviar para o LLM.
-*   **Risco**: Usuários podem tentar manipular o comportamento do Bruce ("Esqueça suas instruções anteriores e...") para obter informações restritas ou forçar comportamentos indesejados.
-*   **Impacto**: Médio (Reputacional).
+| Vulnerabilidade | Status | Solução Implementada |
+| :--- | :--- | :--- |
+| **Exposição de Chaves de API** | **RESOLVIDO** | As chamadas ao Gemini agora passam por uma **Supabase Edge Function** (`chat-proxy`). A chave `GEMINI_API_KEY` fica armazenada de forma segura como um Secret no Supabase, nunca chegando ao navegador do usuário. |
+| **Banco de Dados Aberto** | **RESOLVIDO** | O **Row Level Security (RLS)** foi habilitado para todas as tabelas. Implementamos políticas que permitem `SELECT` público apenas onde necessário, restringindo edições para o `service_role`. |
+| **Injeção de Prompt** | **RESOLVIDO** | Implementamos uma camada de **Prompt Guard** (System Instructions rígidas) tanto no frontend quanto na Edge Function, bloqueando tentativas de desviar o Bruce de sua função. |
+| **Privacidade de Feedback** | **RESOLVIDO** | Feedbacks agora são `insert-only` para o público; ninguém consegue ler o feedback de outros usuários sem permissão de admin. |
 
-## 🟢 Recomendações de Correção
+## 📅 Histórico de Preços & Referência (Março 2026)
+- **Gemini 2.5 Flash**: ~$0.075/1M tokens (Input) | ~$0.30/1M tokens (Output)
+- **Gemini Embedding 001**: ~$0.15/1M tokens (Input)
+- **Referência Oficial**: [Google AI Pricing](https://ai.google.dev/pricing)
 
-| Vulnerabilidade | Solução Recomendada |
-| :--- | :--- |
-| **Chave de API** | Mover as chamadas do Gemini para **Supabase Edge Functions**. O frontend chamará a Função, e a Função usará a chave secreta de forma protegida no servidor. |
-| **Supabase RLS** | Reabilitar o RLS e criar políticas: `SELECT` permitido para todos, `INSERT/UPDATE/DELETE` apenas para usuários autenticados ou via Service Role. |
-| **Segurança RAG** | Implementar filtros de metadados na busca vetorial para garantir que o Bruce só acesse documentos públicos. |
-| **Sanitização** | Adicionar um "Guardrail" (instruções de sistema mais rígidas) para prevenir injeções de prompt comuns. |
+---
+**Nota**: O monitoramento de logs via Supabase Dashboard deve ocorrer regularmente para detectar acessos anômalos.
 
 ## 📅 Histórico de Preços (Março 2026)
 Conforme solicitado, os custos de infraestrutura documentados nesta data são:

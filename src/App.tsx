@@ -1410,6 +1410,7 @@ const BruceAssistant = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
       if (error) {
           console.error("Vector search error:", error);
       }
+      console.log(`[RAG] Busca vetorial retornou ${documents?.length || 0} fragmentos relevantes.`);
 
       // 3. Compile context from matched documents
       let contextString = "Contexto encontrado nos documentos da base de conhecimento (Este recinto semântico traz até 150 produtos relevantes buscados no banco de dados para responder):\n";
