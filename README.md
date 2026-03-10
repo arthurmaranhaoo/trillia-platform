@@ -53,13 +53,17 @@ O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e
 *   **Ação**: Preencha a planilha com as colunas de dados essenciais (SKU, Nome, Descrição, etc.), garantindo que as colunas críticas como `enxoval_link` e `owner_email` estejam preenchidas ou mapeadas pelo script.
 *   **Sincronizar**: Rode `node scripts/sync_all.js`. 
     *   Este comando central realiza um **Wipe Sync**: limpa o banco de produtos e documentos antigos para evitar duplicações.
-    *   Sincroniza os 35 produtos do catálogo.
+    *   Sincroniza todos os produtos mapeados no catálogo na sua máquina (é o desenvolvedor que deve gerenciar e popular a planilha `catalog.xlsx` localmente).
     *   Indexa automaticamente o conteúdo estático do site (ex: Fases da Metodologia do `App.tsx`) para o contexto do RAG.
+*   **Automação (Cron)**: O sistema possui um cron que verifica e sincroniza atualizações no catálogo relacional e vetorial a cada **30 minutos**. Para ativar:
+    ```bash
+    node scripts/cron_sync.js
+    ```
 
 ### 2. Indexação de Documentos Extras (PDF, PPTX, DOCX, TXT)
 *   **Onde**: Pasta `data/docs/`
 *   **Ação**: Jogue aqui apresentações ou manuais técnicos complementares.
-*   **Motor de Extração**: O script conta com `pdf-parse` para leitura profunda de PDFs e `officeparser` para abrir os bytes de PPTX/DOCX nativamente no Node.js.
+*   **Motor de Extração**: O script conta com `pdf-parse` para leitura profunda de PDFs, `officeparser` para abrir os bytes de PPTX/DOCX nativamente no Node.js e suporta a ingestão de textos crus (TXT, MD, CSV).
 *   **Sincronizar**: Rode `node --env-file=.env scripts/ingest_docs.js`.
 *   **Automação (Cron)**: O sistema possui um cron que verifica novos arquivos a cada **1 minuto**. Para ativar:
     ```bash
@@ -78,14 +82,26 @@ Para o sistema funcionar (Feedbacks e Bruce Assistente), você precisa configura
 
 ---
 
-## 🚦 Riscos Mapeados (Lições do Rollback)
+## 🛡️ Políticas de Segurança e Preços (Security Hardening)
 
-Durante o desenvolvimento da UI dos cartões de produto, enfrentamos quebras estruturais que exigiram um **rollback** do código fonte (`App.tsx`). Para evitar futuras regressões, os seguintes riscos estão mapeados:
+O projeto passou por um processo rigoroso de segurança e está preparado para uso em ambiente controlado.
 
-1.  **Destruição de Estado (React Hooks)**: Alterações massivas de refatoração no `App.tsx` têm alto risco de quebrar regras de Hooks ou apagar variáveis de estado cruciais (como `messages` do Bruce ou estado do modal `selectedProduct`).
-2.  **Sincronização Divergente**: Atualizar a UI para exibir dados novos (ex: `owner_email` ou `enxoval_link`) sem primeiro garantir que o pipeline de sincronização (`sync_all.js` e a tabela do Supabase) os suporte, levará a campos em branco e quebra de navegação.
-3.  **Wipe Constraints no RAG**: Alterar a lógica de deleção no `sync_all.js` (como remover o filtro de IDs fantasmas) pode acidentalmente deletar históricos de chat ou documentos ingeridos manualmente via `ingest_docs.js`. O Wipe Sync deve sempre focar **estritamente em registros gerados por máquina** (`Excel_Catalog` ou `Site_Content`).
-4.  **Estilização "Frankenstein"**: Misturar classes Tailwind novas sem checar os globals e breakpoints preexistentes pode causar o fenômeno de modais que não fecham ou z-indexes sobrepostos que ocultam o botão do Bruce. Teste de regressão visual no desktop e mobile é obrigatório.
+### Vulnerabilidades Resolvidas
+
+| Vulnerabilidade | Status | Solução Implementada |
+| :--- | :--- | :--- |
+| **Exposição de Chaves de API** | **RESOLVIDO** | As chamadas ao Gemini (Chat e Embedding) agora passam por uma **Supabase Edge Function** (`chat-proxy`). Nenhuma chave ou lógica de IA fica exposta no navegador. |
+| **Banco de Dados Aberto** | **RESOLVIDO** | O **Row Level Security (RLS)** foi habilitado para todas as tabelas. Implementamos políticas que permitem `SELECT` público apenas onde necessário, restringindo edições para o `service_role`. |
+| **Injeção de Prompt** | **RESOLVIDO** | Implementamos uma camada de **Prompt Guard** (System Instructions rígidas) tanto no frontend quanto na Edge Function, bloqueando tentativas de desviar o Bruce de sua função. |
+| **Privacidade de Feedback** | **RESOLVIDO** | Feedbacks agora são `insert-only` para o público; ninguém consegue ler o feedback de outros usuários sem permissão de admin. |
+
+### 📅 Histórico de Preços API & Referência (Março 2026)
+Conforme documentado durante o desenvolvimento, os custos de infraestrutura de inteligência artificial são:
+- **Gemini 2.5 Flash**: ~$0.075/1M tokens (Input) \| ~$0.30/1M tokens (Output)
+- **Gemini Embedding 001**: ~$0.15/1M tokens (Input)
+- **Referência Oficial**: [Google AI Pricing](https://ai.google.dev/pricing)
+
+*Nota: O monitoramento de logs via Supabase Dashboard deve ocorrer regularmente para detectar acessos anômalos.*
 
 ---
 **Status Final**: **Tudo Operacional e Sincronizado! (v1.1 - Pos-Rollback Integrado)**
