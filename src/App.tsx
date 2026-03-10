@@ -1410,12 +1410,42 @@ const BruceAssistant = ({
     setIsLoading(true);
 
     try {
-      // 1. Generate embedding for the user's query
+      // 1. Prepare GenAI Client
       // For embedding, we still use the client key for now (low risk compared to chat)
       // but in a full production, this would also move to Edge Functions.
       const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
+      
+      // 1.5 Query Synthesis: Rephrase the query based on recent chat history to solve the "Context Disconnection" problem
+      let searchQuery = input;
+      if (messages.length > 0) {
+        try {
+          const synthesisModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+          const recentHistory = messages.slice(-4).map(m => `${m.role === 'user' ? 'Usuário' : 'Bruce'}: ${m.text}`).join('\n');
+          const prompt = `Dada a conversa recente abaixo, reescreva a última pergunta do usuário para que ela seja uma consulta de busca independente e rica em contexto, substituindo pronomes e referências ocultas pelos nomes dos produtos e entidades discutidas. 
+Por exemplo, se a conversa foi sobre o "Bio-Battery Drone" e o usuário pergunar "quem é o responsável?", a busca deve ser "quem é o responsável pelo Bio-Battery Drone?".
+Se a pergunta já for independente, retorne-a exatamente como está. NÃO responda à pergunta, apenas reescreva a frase de busca crua.
+
+Conversa Recente:
+${recentHistory}
+Usuário: ${input}
+
+Consulta de Busca Otimizada:`;
+
+          const synthesisResult = await synthesisModel.generateContent(prompt);
+          const synthesized = synthesisResult.response.text().trim();
+          if (synthesized) {
+            searchQuery = synthesized;
+            console.log("[RAG] Query Original:", input);
+            console.log("[RAG] Query Sintetizada (Enviada pro VectorDB):", searchQuery);
+          }
+        } catch (e) {
+          console.error("Query synthesis failed, falling back to raw input", e);
+        }
+      }
+
+      // 2. Generate embedding for the Synthesized Query
       const embedModel = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
-      const embedResult = await embedModel.embedContent(input);
+      const embedResult = await embedModel.embedContent(searchQuery);
       const queryEmbedding = embedResult.embedding.values;
 
       // 2. Perform similarity search in Supabase vector store
