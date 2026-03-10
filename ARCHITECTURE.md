@@ -16,7 +16,7 @@ graph TD
     
     subgraph "Fontes de Dados (Local)"
         Excel[(Catalog.xlsx)]
-        DocsDir[[Pasta data/docs]]
+        DocsDir[[Docs: PDF/PPTX/DOCX/TXT]]
     end
     
     subgraph "Processamento (Node.cjs)"
@@ -34,8 +34,11 @@ graph TD
     Form --> Supa
     
     Excel[(Catalog.xlsx)] --> Sync[Sync Script]
+    DocsDir --> Ingest[Ingest Script]
+    Ingest --> Parsers[[pdf-parse / officeparser]]
+    Parsers --> GeminiEmb[Gemini Embedding]
+    Sync --> GeminiEmb
     Sync --> SupaRel[(Supabase Products)]
-    Sync --> GeminiEmb[[Gemini Embedding]]
     GeminiEmb --> SupaVec[(Supabase Vector)]
     
     User --> UI[Interface Bruce]
@@ -101,7 +104,7 @@ O "cérebro" da plataforma utiliza o estado da arte em Large Language Models (LL
 Utilizamos **RAG (Retrieval-Augmented Generation)** para garantir que o Bruce nunca invente informações (alucinação).
 
 - **Busca Vetorial**: Integra dados da planilha de produtos e de documentos externos.
-- **Formatos Suportados**: Além do Excel, o Bruce "lê" arquivos `.pdf`, `.pptx`, `.docx` e `.txt`.
+- **Formatos Suportados**: Além do Excel, o Bruce "lê" arquivos em massa da pasta `data/docs`. Utilizamos nativamente `pdf-parse` e `officeparser` para extrair buffers de texto de `.pdf`, `.pptx`, `.docx` e `.txt`.
 - **Processo RAG**:
     1. O usuário faz uma pergunta.
     2. O sistema gera um embedding da pergunta.
@@ -143,7 +146,8 @@ O projeto inova ao utilizar o **Excel como fonte primária de verdade**, facilit
 | **IA Vector** | Google Gemini Embeddings |
 | **Database** | Supabase (PostgreSQL + pgvector) |
 | **Scripts** | Node.js (CommonJS & ESM) |
-| **Data Format** | Excel (.xlsx), CSV, JSON |
+| **Parsers** | `pdf-parse` (PDF) & `officeparser` (PPTX/DOCX) |
+| **Data Format** | Excel (.xlsx), CSV, JSON, TXT |
 | **Deployment** | Git / GitHub Versioning |
 
 ---

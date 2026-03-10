@@ -56,10 +56,11 @@ O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e
     *   Sincroniza os 35 produtos do catálogo.
     *   Indexa automaticamente o conteúdo estático do site (ex: Fases da Metodologia do `App.tsx`) para o contexto do RAG.
 
-### 2. Indexação de Documentos Extras (PDF, PPTX)
+### 2. Indexação de Documentos Extras (PDF, PPTX, DOCX, TXT)
 *   **Onde**: Pasta `data/docs/`
 *   **Ação**: Jogue aqui apresentações ou manuais técnicos complementares.
-*   **Sincronizar**: Rode `node scripts/ingest_rag.cjs`.
+*   **Motor de Extração**: O script conta com `pdf-parse` para leitura profunda de PDFs e `officeparser` para abrir os bytes de PPTX/DOCX nativamente no Node.js.
+*   **Sincronizar**: Rode `node --env-file=.env scripts/ingest_docs.js`.
 *   **Automação (Cron)**: O sistema possui um cron que verifica novos arquivos a cada **1 minuto**. Para ativar:
     ```bash
     node scripts/cron_rag.cjs
