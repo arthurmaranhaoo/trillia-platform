@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import xlsx from 'xlsx';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 import fs from 'fs';
 
@@ -22,17 +23,16 @@ if (fs.existsSync(envPath)) {
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const geminiApiKey = process.env.VITE_GEMINI_API_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error("Error: Missing SUPABASE_URL or SUPABASE_KEY environment variables.");
-  console.log("Environment detected:", { 
-    supabaseUrl: supabaseUrl ? 'Set' : 'Missing', 
-    supabaseKey: supabaseKey ? 'Set' : 'Missing' 
-  });
+if (!supabaseUrl || !supabaseKey || !geminiApiKey) {
+  console.error("Error: Missing SUPABASE_URL, SUPABASE_KEY, or VITE_GEMINI_API_KEY environment variables.");
   process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
+const genAI = new GoogleGenerativeAI(geminiApiKey);
+const embedModel = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
 
 function cleanValue(val) {
   if (val === undefined || val === null || val === '') return null;
@@ -49,10 +49,9 @@ async function syncCatalog() {
     const sheet = workbook.Sheets[sheetName];
     const products = xlsx.utils.sheet_to_json(sheet);
     
-    console.log(`Found ${products.length} products. Cleaning up old data and syncing...`);
-    
-    // Wipe existing products to ensure only spreadsheet items remain
-    // We use .neq('sku', '') to delete everything since SKU is a string
+    // Wipe existing products & documents to ensure only spreadsheet items remain
+    console.log("  Clearing old relational and vector data...");
+    await supabase.from('documents').delete().eq('metadata->>source', 'Excel_Catalog');
     const { error: clearError } = await supabase.from('products').delete().neq('sku', '');
     if (clearError) console.error("Warning: Error clearing products table:", clearError.message);
 
@@ -60,6 +59,7 @@ async function syncCatalog() {
 
     for (const [index, row] of products.entries()) {
       try {
+        const skuStr = String(row.sku);
         // Create metadata object from individual columns
         const metadata = {
           tag: cleanValue(row.tag || row.horizonte),
@@ -79,7 +79,7 @@ async function syncCatalog() {
         };
 
         const payload = {
-          sku: String(row.sku),
+          sku: skuStr,
           name: String(row.name),
           description: cleanValue(row.description),
           category: cleanValue(row.category || row.bu),
@@ -88,14 +88,39 @@ async function syncCatalog() {
           metadata: metadata
         };
 
-        const { error } = await supabase
-          .from('products')
-          .upsert(payload, { onConflict: 'sku' });
+        // 1. Sync to Products Table
+        const { error: dbError } = await supabase.from('products').upsert(payload, { onConflict: 'sku' });
+        if (dbError) throw dbError;
 
-        if (error) throw error;
+        // 2. Generate RAG Context & Embedding
+        const ragContext = `
+PRODUTO: ${payload.name}
+SKU: ${payload.sku}
+CATEGORIA: ${payload.category}
+HORIZONTE: ${metadata.tag}
+DESCRIÇÃO: ${payload.description}
+PROBLEMA: ${metadata.problem}
+CASOS DE USO: ${metadata.useCases.join(', ')}
+SOLUÇÃO TÉCNICA: ${metadata.solutions.join(', ')}
+TECNOLOGIAS: ${metadata.tech.join(', ')}
+RESPONSÁVEL: ${metadata.owner}
+SQUAD: ${metadata.squad}
+        `.trim();
+
+        const result = await embedModel.embedContent(ragContext);
+        const embedding = result.embedding.values;
+
+        // 3. Sync to Documents Table (Vector Store)
+        const { error: vecError } = await supabase.from('documents').insert({
+            content: ragContext,
+            metadata: { source: 'Excel_Catalog', sku: payload.sku },
+            embedding: embedding
+        });
+
+        if (vecError) throw vecError;
         
         successCount++;
-        console.log(`  Synced: ${row.sku} - ${row.name}`);
+        console.log(`  ✅ Synced & Embedded: ${payload.sku}`);
       } catch (err) {
         console.error(`  Error syncing row ${index} (SKU: ${row.sku}):`, err.message);
       }

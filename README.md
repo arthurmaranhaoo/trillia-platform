@@ -48,15 +48,17 @@ Para rodar o projeto localmente em qualquer máquina:
 
 O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e Documentos (Conhecimento Adicional).
 
-### 1. Cadastro de Produtos (Excel)
+### 1. Cadastro de Produtos (Excel - "Single Source of Truth")
 *   **Onde**: `data/catalog.xlsx`
-*   **Ação**: Preencha a planilha com SKUs, Nomes e Preços.
-*   **Sincronizar**: Rode `node scripts/sync_now.cjs`. Isso atualiza o catálogo no site e no cérebro do Bruce.
+*   **Ação**: Preencha a planilha com as 18 colunas de dados (SKU, Nome, Descrição, Deep Dives, etc).
+*   **Sincronizar**: Rode `node scripts/sync_catalog.js`. 
+    *   Este comando realiza um **Wipe Sync**: limpa o banco e re-insere tudo, garantindo 100% de paridade.
+    *   Gera automaticamente os **embeddings** para o Bruce Assistente.
 
-### 2. Indexação de Documentos (PDF, PPTX, TXT)
+### 2. Indexação de Documentos Extras (PDF, PPTX)
 *   **Onde**: Pasta `data/docs/`
-*   **Ação**: Jogue aqui apresentações, PDFs técnicos ou manuais.
-*   **Sincronizar Manual**: Rode `node scripts/ingest_rag.cjs`.
+*   **Ação**: Jogue aqui apresentações ou manuais técnicos complementares.
+*   **Sincronizar**: Rode `node scripts/ingest_rag.cjs`.
 *   **Automação (Cron)**: O sistema possui um cron que verifica novos arquivos a cada **1 minuto**. Para ativar:
     ```bash
     node scripts/cron_rag.cjs

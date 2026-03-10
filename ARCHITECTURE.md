@@ -33,14 +33,14 @@ graph TD
     User --> Form
     Form --> Supa
     
-    Excel --> Sync
-    DocsDir --> Sync
-    Sync --> Gemini
-    Gemini --> Supa
-    Cron --> Sync
+    Excel[(Catalog.xlsx)] --> Sync[Sync Script]
+    Sync --> SupaRel[(Supabase Products)]
+    Sync --> GeminiEmb[[Gemini Embedding]]
+    GeminiEmb --> SupaVec[(Supabase Vector)]
     
-    UI <--> Gemini
-    Gemini <--> Supa
+    User --> UI[Interface Bruce]
+    UI <--> GeminiFlash[[Gemini 2.5 Flash]]
+    GeminiFlash <--> SupaVec
 ```
 
 ### Fluxo de RAG (Busca Inteligente)
@@ -79,6 +79,11 @@ A plataforma foi construída seguindo princípios de **Modern Web Performance** 
 O "cérebro" da plataforma utiliza o estado da arte em Large Language Models (LLMs) do Google.
 
 - **Modelo de Chat**: **Gemini 2.5 Flash**. Escolhido pelo equilíbrio perfeito entre baixa latência e raciocínio complexo.
+- **Estrutura de Custos (Gemini 1.5/2.5 Flash)**:
+    - **Input**: ~$0.075 por 1 milhão de tokens.
+    - **Output**: ~$0.30 por 1 milhão de tokens.
+    - **Contexto**: Suporta até 1M+ de tokens, ideal para RAG extensivo.
+    - **Eficiência**: Otimizado para respostas rápidas (<1.5s) com alta precisão.
 - **Capacidades**:
     - Reconhecimento de intenção (Intent Recognition).
     - Formatação de respostas em Markdown.
@@ -115,11 +120,12 @@ Utilizamos o **Supabase** como plataforma de backend as a service, provendo:
 
 O projeto inova ao utilizar o **Excel como fonte primária de verdade**, facilitando a gestão por pessoas não-técnicas.
 
-- **Sincronização**: Scripts customizados em Node.js que:
-    - Limpam dados antigos (Wipe Sync).
-    - Processam e limpam dados do Excel (`xlsx`).
-    - Geram novos embeddings via Google AI API.
-    - Atualizam o Supabase de forma atômica.
+- **Sincronização**: Scripts customizados em Node.js (`sync_catalog.js`) que:
+    - **Wipe Sync**: Limpam todos os produtos e vetores existentes para garantir integridade.
+    - **Parsing**: Processam 18 colunas do Excel (`xlsx`), incluindo metadados profundos.
+    - **Embedding**: Geram vetores atômicos para cada produto usando Google AI.
+    - **Atomic Update**: Atualizam o Supabase (Relacional + Vector) em um único fluxo.
+- **Colunas da Planilha**: `sku`, `name`, `description`, `category`, `price`, `tag`, `owner`, `squad`, `revenue`, `bu`, `mercado`, `pricing`, `enxoval_link`, `problem`, `use_cases`, `technical_solution`, `tech_stack`.
 - **Cron Jobs**: Sistema de sincronização agendada para manter o Bruce sempre atualizado com o `catalog.xlsx`.
 
 ---
