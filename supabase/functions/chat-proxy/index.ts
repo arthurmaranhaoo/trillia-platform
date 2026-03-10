@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, context } = await req.json()
+    const { message, history, context } = await req.json()
     const apiKey = Deno.env.get('GEMINI_API_KEY')
     
     if (!apiKey) {
@@ -31,15 +31,27 @@ serve(async (req) => {
       }
     })
 
-    // Generating fixed response to avoid generic "AI model" hallucinations
-    const result = await model.generateContent({
-        contents: [
-            { role: "user", parts: [{ text: message }] }
-        ]
-    })
-    
-    const response = await result.response
-    const text = response.text()
+    let text = "";
+
+    if (history && history.length > 0) {
+      // Chat with History (Map frontend payload to Gemini format)
+      const formattedHistory = history.map((msg: any) => ({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }]
+      }));
+      
+      const chat = model.startChat({ history: formattedHistory });
+      const result = await chat.sendMessage(message);
+      text = result.response.text();
+    } else {
+      // Single Shot Generation (Fallback)
+      const result = await model.generateContent({
+          contents: [
+              { role: "user", parts: [{ text: message }] }
+          ]
+      })
+      text = result.response.text();
+    }
 
     if (text.includes("modelo de linguagem") || text.includes("não tenho um catálogo")) {
         // Emergency reroute if Gemini still tries to be generic
