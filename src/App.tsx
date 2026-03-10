@@ -704,6 +704,7 @@ const CatalogView = () => {
             useCases: item.metadata?.useCases || ['Automatização de fluxos', 'Redução de custos', 'Ganho de eficiência'],
             solutions: item.metadata?.solutions || ['Implementação via API', 'Módulos independentes', 'Plataforma em nuvem'],
             tech: item.metadata?.tech || ['React', 'Node.js', 'Supabase'],
+            enxoval_link: item.metadata?.enxoval_link || null,
             price: item.price ? `R$ ${item.price}` : 'Sob Consulta',
             stock: item.stock_status
         }));
@@ -731,7 +732,7 @@ const CatalogView = () => {
     const matchesResponsavel = filters.responsavel === 'Todos' || p.owner === filters.responsavel;
     
     return matchesSearch && matchesBU && matchesMercado && matchesHorizonte && matchesSquad && matchesResponsavel;
-  });
+  }).sort((a, b) => a.title.localeCompare(b.title));
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -997,6 +998,17 @@ const CatalogView = () => {
                     <div className="flex items-center gap-3 text-[10px] font-mono font-bold text-ink/30 uppercase tracking-widest group-hover/footer:text-primary transition-colors">
                       Ver Detalhes <ArrowRight size={14} className="group-hover/footer:translate-x-1 transition-transform" />
                     </div>
+                    {product.enxoval_link && (
+                      <a 
+                        href={product.enxoval_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-2 text-[10px] font-mono font-bold text-primary uppercase tracking-widest hover:underline"
+                      >
+                        <Paperclip size={12} /> Enxoval
+                      </a>
+                    )}
                   </div>
                 </>
               ) : (
@@ -1035,6 +1047,18 @@ const CatalogView = () => {
                       <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center text-ink/20 group-hover:text-primary group-hover:bg-primary/5 transition-all">
                         <ArrowRight size={16} />
                       </div>
+                      {product.enxoval_link && (
+                        <a 
+                          href={product.enxoval_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center gap-2 text-[10px] font-mono font-bold text-primary hover:text-ink transition-colors ml-4"
+                          title="Abrir Enxoval"
+                        >
+                          <Paperclip size={14} />
+                        </a>
+                      )}
                     </div>
                   </div>
                 </>
