@@ -52,7 +52,8 @@ async function syncCatalog() {
     console.log(`Found ${products.length} products. Cleaning up old data and syncing...`);
     
     // Wipe existing products to ensure only spreadsheet items remain
-    const { error: clearError } = await supabase.from('products').delete().neq('id', 0);
+    // We use .neq('sku', '') to delete everything since SKU is a string
+    const { error: clearError } = await supabase.from('products').delete().neq('sku', '');
     if (clearError) console.error("Warning: Error clearing products table:", clearError.message);
 
     let successCount = 0;
