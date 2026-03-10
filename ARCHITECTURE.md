@@ -41,6 +41,7 @@ graph TD
     Ingest --> Parsers[[pdf-parse / officeparser]]
     Parsers --> GeminiEmb[Gemini Embedding]
     Sync --> GeminiEmb
+    GeminiEmb --> SupaVec
     Sync --> Supa
     
     User --> UI[Interface Bruce]
