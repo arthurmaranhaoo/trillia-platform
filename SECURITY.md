@@ -13,7 +13,7 @@ O projeto passou por um processo de **Security Hardening** e agora está prepara
 
 | Vulnerabilidade | Status | Solução Implementada |
 | :--- | :--- | :--- |
-| **Exposição de Chaves de API** | **RESOLVIDO** | As chamadas ao Gemini agora passam por uma **Supabase Edge Function** (`chat-proxy`). A chave `GEMINI_API_KEY` fica armazenada de forma segura como um Secret no Supabase, nunca chegando ao navegador do usuário. |
+| **Exposição de Chaves de API** | **RESOLVIDO** | As chamadas ao Gemini (Chat e Embedding) agora passam por uma **Supabase Edge Function** (`chat-proxy`). Nenhuma chave ou lógica de IA fica exposta no navegador. |
 | **Banco de Dados Aberto** | **RESOLVIDO** | O **Row Level Security (RLS)** foi habilitado para todas as tabelas. Implementamos políticas que permitem `SELECT` público apenas onde necessário, restringindo edições para o `service_role`. |
 | **Injeção de Prompt** | **RESOLVIDO** | Implementamos uma camada de **Prompt Guard** (System Instructions rígidas) tanto no frontend quanto na Edge Function, bloqueando tentativas de desviar o Bruce de sua função. |
 | **Privacidade de Feedback** | **RESOLVIDO** | Feedbacks agora são `insert-only` para o público; ninguém consegue ler o feedback de outros usuários sem permissão de admin. |
