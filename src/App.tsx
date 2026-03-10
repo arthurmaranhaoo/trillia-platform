@@ -714,6 +714,8 @@ const CatalogView = () => {
             solutions: item.metadata?.solutions || ['Implementação via API', 'Módulos independentes', 'Plataforma em nuvem'],
             tech: item.metadata?.tech || ['React', 'Node.js', 'Supabase'],
             enxoval_link: item.metadata?.enxoval_link || null,
+            ofertas: item.metadata?.ofertas || '',
+            ofertas_nomes: item.metadata?.ofertas_nomes || '',
             price: item.price ? `R$ ${item.price}` : 'Sob Consulta',
             stock: item.stock_status
         }));
@@ -978,9 +980,25 @@ const CatalogView = () => {
                       <p className="text-xs font-mono font-bold text-ink/30 uppercase tracking-widest">{product.category}</p>
                     </div>
 
-                    <p className="text-sm text-ink/50 leading-relaxed line-clamp-3">
-                      {product.desc}
-                    </p>
+                    {product.desc && (
+                      <p className="text-sm text-ink/50 leading-relaxed line-clamp-2">
+                        {product.desc}
+                      </p>
+                    )}
+
+                    {product.ofertas_nomes && (
+                      <div className="space-y-2">
+                        <p className="text-[9px] font-mono text-ink/20 font-bold uppercase tracking-widest">OFERTAS:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {product.ofertas_nomes.split(',').slice(0, 3).map((o: string) => (
+                            <span key={o} className="px-2 py-0.5 bg-primary/5 text-[8px] font-mono font-bold text-primary rounded-md uppercase tracking-widest">{o.trim()}</span>
+                          ))}
+                          {product.ofertas_nomes.split(',').length > 3 && (
+                            <span className="text-[8px] font-mono font-bold text-ink/20 uppercase tracking-widest leading-none flex items-center">+{product.ofertas_nomes.split(',').length - 3}</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="mt-auto pt-6 border-t border-ink/5">
                       <div className="grid grid-cols-2 gap-8">
@@ -1206,10 +1224,26 @@ const CatalogView = () => {
                     <section className="space-y-6">
                       <div className="flex items-center gap-4">
                         <div className="h-[2px] w-12 bg-primary" />
-                        <p className="text-[11px] font-mono text-primary font-bold tracking-widest uppercase">O PROBLEMA</p>
+                        <p className="text-[11px] font-mono text-primary font-bold tracking-widest uppercase">PROBLEMA E SOLUÇÃO</p>
                       </div>
                       <p className="text-2xl font-black text-ink/80 leading-tight">{selectedProduct.problem}</p>
                     </section>
+
+                    {selectedProduct.ofertas && (
+                      <section className="space-y-6">
+                        <div className="flex items-center gap-4">
+                          <div className="h-[2px] w-12 bg-accent-green" />
+                          <p className="text-[11px] font-mono text-accent-green font-bold tracking-widest uppercase">OFERTAS DISPONÍVEIS</p>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
+                          {selectedProduct.ofertas.split(',').map((o: string, idx: number) => (
+                            <div key={idx} className="p-6 bg-surface border border-ink/5 rounded-2xl space-y-2 hover:border-accent-green/30 transition-all">
+                              <p className="text-base font-bold text-ink/80 leading-snug">{o.trim()}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+                    )}
 
                     <section className="space-y-6">
                       <div className="flex items-center gap-4">
