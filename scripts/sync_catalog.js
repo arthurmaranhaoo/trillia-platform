@@ -49,7 +49,12 @@ async function syncCatalog() {
     const sheet = workbook.Sheets[sheetName];
     const products = xlsx.utils.sheet_to_json(sheet);
     
-    console.log(`Found ${products.length} products. Syncing with Supabase...`);
+    console.log(`Found ${products.length} products. Cleaning up old data and syncing...`);
+    
+    // Wipe existing products to ensure only spreadsheet items remain
+    const { error: clearError } = await supabase.from('products').delete().neq('id', 0);
+    if (clearError) console.error("Warning: Error clearing products table:", clearError.message);
+
     let successCount = 0;
 
     for (const [index, row] of products.entries()) {
