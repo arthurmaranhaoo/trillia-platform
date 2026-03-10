@@ -53,11 +53,12 @@ O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e
 
 ### 1. Cadastro de Produtos (Excel - "Single Source of Truth")
 *   **Onde**: `data/catalog.xlsx`
-*   **Ação**: Preencha a planilha com as colunas de dados essenciais (SKU, Nome, Descrição, etc.), garantindo que as colunas críticas como `enxoval_link` e `owner_email` estejam preenchidas ou mapeadas pelo script.
+*   **Ação**: Preencha a planilha com as colunas de dados essenciais. O sistema é dinâmico: qualquer nova coluna adicionada será automaticamente indexada.
 *   **Sincronizar**: Rode `node scripts/sync_all.js`. 
     *   Este comando central realiza um **Wipe Sync**: limpa o banco de produtos e documentos antigos para evitar duplicações.
-    *   Sincroniza todos os produtos mapeados no catálogo na sua máquina (é o desenvolvedor que deve gerenciar e popular a planilha `catalog.xlsx` localmente).
-    *   Indexa automaticamente o conteúdo estático do site (ex: Fases da Metodologia do `App.tsx`) para o contexto do RAG.
+    *   **Elastic Indexing**: Sincroniza **todas** as colunas do catálogo local, garantindo que o Bruce conheça cada detalhe presente na planilha.
+    *   Sincroniza automaticamente o conteúdo estático do site (ex: Fases da Metodologia do `App.tsx`) para o contexto do RAG.
+*   **Inteligência Ativa**: O Bruce agora possui **Memória de Curto Prazo** e **Síntese de Consultas**, o que significa que ele entende pronomes e perguntas que dependem do histórico do chat.
 *   **Automação (Cron)**: O sistema possui um cron que verifica e sincroniza atualizações no catálogo relacional e vetorial **todas as noites (exatamente às 00:00)**. Para ativar o robô em background:
     ```bash
     node scripts/cron_sync.js

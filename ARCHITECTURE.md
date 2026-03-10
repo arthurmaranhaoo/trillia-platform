@@ -56,13 +56,14 @@ sequenceDiagram
     participant G as Gemini API
     participant S as Supabase (Vector Store)
 
-    U->>F: Faz uma pergunta ("Qual o preço do X?")
-    F->>G: Gera Embedding da Pergunta
+    U->>F: Faz uma pergunta ("Quem é o dono?")
+    F->>G: [Query Synthesis] Recontextualiza com o histórico ("Quem é o dono do MIH?")
+    F->>G: Gera Embedding da Pergunta Sintetizada
     G->>S: Busca Vetorial (Similarity Search)
-    S-->>G: Retorna Contexto (Produtos/Docs)
-    G->>G: Gera Resposta com Contexto
-    G-->>F: Resposta Formatada
-    F-->>U: Exibe Resposta do Bruce
+    S-->>G: Retorna Contexto (SQUAD, RESPONSÁVEL, SKU...)
+    G->>G: Gera Resposta com Contexto (Persona: Strategist)
+    G-->>F: Resposta Formatada (Markdown)
+    F-->>U: Exibe Resposta do Bruce (Memória Ativa)
 ```
 
 ---
@@ -90,9 +91,11 @@ O "cérebro" da plataforma utiliza o estado da arte em Large Language Models (LL
     - **Contexto**: Suporta até 1M+ de tokens, ideal para RAG extensivo.
     - **Eficiência**: Otimizado para respostas rápidas (<1.5s) com alta precisão.
 - **Capacidades**:
-    - Reconhecimento de intenção (Intent Recognition).
-    - Formatação de respostas em Markdown.
-    - Personalidade amigável e técnica ("Assistente de Curadoria").
+    - **Stateful Memory**: Utiliza `genAI.startChat` para manter a continuidade da conversa, permitindo referências a mensagens anteriores.
+    - **Reconhecimento de Intenção (Intent Recognition)**.
+    - **Query Synthesis**: Camada de inteligência que analisa o histórico para expandir perguntas vagas antes do RAG.
+    - **Persona Strategist**: Tom de voz soberbo, profissional e direto, sem linguagem de "IA genérica", sincronizado com `prompt.md`.
+    - Formatação de respostas em Markdown com tabelas obrigatórias para comparações.
 - **Embeddings**: Modelo `gemini-embedding-001` para transformar textos técnicos da planilha e de documentos (PDF, PPTX, TXT) em vetores matemáticos de alta dimensão.
     - **Custo**: ~$0.15 por 1 milhão de tokens de input (sem custo de output).
 - **Referência de Preços**:
@@ -107,11 +110,11 @@ Utilizamos **RAG (Retrieval-Augmented Generation)** para garantir que o Bruce nu
 
 - **Busca Vetorial**: Integra dados da planilha de produtos e de documentos externos.
 - **Formatos Suportados**: Além do Excel, o Bruce "lê" arquivos em massa da pasta `data/docs`. Utilizamos nativamente `pdf-parse` e `officeparser` para extrair buffers de texto de `.pdf`, `.pptx`, `.docx` e `.txt`.
-- **Processo RAG**:
-    1. O usuário faz uma pergunta.
-    2. O sistema gera um embedding da pergunta.
-    3. Fazemos uma busca vetorial no Supabase para encontrar os produtos ou documentos mais relevantes.
-    4. Enviamos esse contexto para o Gemini gerar a resposta precisa.
+- **Processo RAG (Aprimorado)**:
+    1. **Synthesis**: O Bruce analisa a pergunta + histórico para entender pronomes ou referências implícitas.
+    2. **Embedding**: Gera um vetor da pergunta "completa".
+    3. **Elastic Retrieval**: Busca vetorial no Supabase para encontrar produtos ou documentos com 100% de cobertura de campos.
+    4. **Context Injection**: O Gemini recebe o contexto purificado (sem metadados técnicos de arquivos) e gera a resposta final.
 
 ---
 
@@ -129,12 +132,12 @@ Utilizamos o **Supabase** como plataforma de backend as a service, provendo:
 
 O projeto inova ao utilizar o **Excel como fonte primária de verdade**, facilitando a gestão por pessoas não-técnicas.
 
-- **Sincronização**: Scripts customizados em Node.js (`sync_catalog.js`) que:
+- **Sincronização**: Scripts customizados em Node.js (`sync_all.js`) que:
     - **Wipe Sync**: Limpam todos os produtos e vetores existentes para garantir integridade.
-    - **Parsing**: Processam 18 colunas do Excel (`xlsx`), incluindo metadados profundos.
+    - **Dynamic Indexing**: Processam **todas as colunas** presentes no Excel de forma dinâmica. Não há limite de campos; o Bruce aprende qualquer novo campo adicionado à planilha.
     - **Embedding**: Geram vetores atômicos para cada produto usando Google AI.
     - **Atomic Update**: Atualizam o Supabase (Relacional + Vector) em um único fluxo.
-- **Colunas da Planilha**: `sku`, `name`, `description`, `category`, `price`, `tag`, `owner`, `squad`, `revenue`, `bu`, `mercado`, `pricing`, `enxoval_link`, `problem`, `use_cases`, `technical_solution`, `tech_stack`.
+- **Colunas da Planilha**: Suporta todas as colunas dinamicamente (SKU, Nome, Descrição, Squad, Responsável, Email, Mercado, Pricing, etc.).
 - **Cron Jobs**: Sistema de sincronização agendada para manter o Bruce sempre atualizado com o `catalog.xlsx`.
 
 ---
