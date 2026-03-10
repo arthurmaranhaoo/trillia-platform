@@ -50,10 +50,11 @@ O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e
 
 ### 1. Cadastro de Produtos (Excel - "Single Source of Truth")
 *   **Onde**: `data/catalog.xlsx`
-*   **Ação**: Preencha a planilha com as 18 colunas de dados (SKU, Nome, Descrição, Deep Dives, etc).
-*   **Sincronizar**: Rode `node scripts/sync_catalog.js`. 
-    *   Este comando realiza um **Wipe Sync**: limpa o banco e re-insere tudo, garantindo 100% de paridade.
-    *   Gera automaticamente os **embeddings** para o Bruce Assistente.
+*   **Ação**: Preencha a planilha com as colunas de dados essenciais (SKU, Nome, Descrição, etc.), garantindo que as colunas críticas como `enxoval_link` e `owner_email` estejam preenchidas ou mapeadas pelo script.
+*   **Sincronizar**: Rode `node scripts/sync_all.js`. 
+    *   Este comando central realiza um **Wipe Sync**: limpa o banco de produtos e documentos antigos para evitar duplicações.
+    *   Sincroniza os 35 produtos do catálogo.
+    *   Indexa automaticamente o conteúdo estático do site (ex: Fases da Metodologia do `App.tsx`) para o contexto do RAG.
 
 ### 2. Indexação de Documentos Extras (PDF, PPTX)
 *   **Onde**: Pasta `data/docs/`
@@ -75,4 +76,15 @@ Para o sistema funcionar (Feedbacks e Bruce Assistente), você precisa configura
 3.  Execute o script. Isso criará as tabelas `products`, `documents` e `feedbacks`, além de habilitar a busca vetorial.
 
 ---
-**Status Final**: **Tudo Operacional e Sincronizado!**
+
+## 🚦 Riscos Mapeados (Lições do Rollback)
+
+Durante o desenvolvimento da UI dos cartões de produto, enfrentamos quebras estruturais que exigiram um **rollback** do código fonte (`App.tsx`). Para evitar futuras regressões, os seguintes riscos estão mapeados:
+
+1.  **Destruição de Estado (React Hooks)**: Alterações massivas de refatoração no `App.tsx` têm alto risco de quebrar regras de Hooks ou apagar variáveis de estado cruciais (como `messages` do Bruce ou estado do modal `selectedProduct`).
+2.  **Sincronização Divergente**: Atualizar a UI para exibir dados novos (ex: `owner_email` ou `enxoval_link`) sem primeiro garantir que o pipeline de sincronização (`sync_all.js` e a tabela do Supabase) os suporte, levará a campos em branco e quebra de navegação.
+3.  **Wipe Constraints no RAG**: Alterar a lógica de deleção no `sync_all.js` (como remover o filtro de IDs fantasmas) pode acidentalmente deletar históricos de chat ou documentos ingeridos manualmente via `ingest_docs.js`. O Wipe Sync deve sempre focar **estritamente em registros gerados por máquina** (`Excel_Catalog` ou `Site_Content`).
+4.  **Estilização "Frankenstein"**: Misturar classes Tailwind novas sem checar os globals e breakpoints preexistentes pode causar o fenômeno de modais que não fecham ou z-indexes sobrepostos que ocultam o botão do Bruce. Teste de regressão visual no desktop e mobile é obrigatório.
+
+---
+**Status Final**: **Tudo Operacional e Sincronizado! (v1.1 - Pos-Rollback Integrado)**
