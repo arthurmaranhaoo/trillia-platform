@@ -1376,7 +1376,7 @@ const BruceAssistant = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
       const { data: documents, error } = await supabase.rpc('match_documents', {
         query_embedding: queryEmbedding,
         match_threshold: 0.3, // Lowered threshold to ensure broad queries pull in as many products as possible
-        match_count: 150 // Drastically increased to capture the entire catalog if needed (up to 150 items)
+        match_count: 150 // Capture the entire catalog if needed
       });
 
       if (error) {
@@ -1395,9 +1395,7 @@ const BruceAssistant = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
         contextString += "Não encontrei documentos específicos no catálogo sobre este tópico, tentarei responder com base no que sei.";
       }
 
-      // 4. Generate response using Gemini 3.0 Flash with the retrieved context
-      const chatModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
-      
+      // 4. Content generation logic
       const systemInstruction = `Você é o Bruce Assistente, um agente de IA especializado no ecossistema de produtos e na metodologia da Trillia.
 Seu objetivo é:
 1. Explicar os produtos do catálogo detalhadamente, usando EXCLUSIVAMENTE as informações fornecidas no contexto.
@@ -1431,6 +1429,9 @@ Regra de Ouro: Baseie suas respostas nos contextos fornecidos acima. Priorize o 
           chatHistory.shift();
       }
 
+      // 4. Generate response using Gemini 2.5 Flash with the retrieved context
+      const chatModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
+      
       const chat = chatModel.startChat({
         history: chatHistory,
         systemInstruction: { role: 'system', parts: [{ text: systemInstruction }] }
