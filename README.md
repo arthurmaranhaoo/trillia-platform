@@ -46,6 +46,9 @@ Para rodar o projeto localmente em qualquer máquina:
 
 ## Gestao de Dados e Conhecimento
 
+> [!WARNING]  
+> **Aviso de Dados de Teste**: O repositório já vem populado com dados fictícios (na planilha `catalog.xlsx` e documentos em `data/docs/`) para que você possa rodar e testar a plataforma imediatamente após o clone. **Para usar em produção com dados reais**, você deve substituir a planilha pelo seu catálogo verdadeiro e apagar os PDFs/PPTXs de teste antes de rodar os scripts de sincronização abaixo.
+
 O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e Documentos (Conhecimento Adicional).
 
 ### 1. Cadastro de Produtos (Excel - "Single Source of Truth")
@@ -55,7 +58,7 @@ O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e
     *   Este comando central realiza um **Wipe Sync**: limpa o banco de produtos e documentos antigos para evitar duplicações.
     *   Sincroniza todos os produtos mapeados no catálogo na sua máquina (é o desenvolvedor que deve gerenciar e popular a planilha `catalog.xlsx` localmente).
     *   Indexa automaticamente o conteúdo estático do site (ex: Fases da Metodologia do `App.tsx`) para o contexto do RAG.
-*   **Automação (Cron)**: O sistema possui um cron que verifica e sincroniza atualizações no catálogo relacional e vetorial a cada **24 horas** (idealmente rodando na virada do dia). Para ativar:
+*   **Automação (Cron)**: O sistema possui um cron que verifica e sincroniza atualizações no catálogo relacional e vetorial **todas as noites (exatamente às 00:00)**. Para ativar o robô em background:
     ```bash
     node scripts/cron_sync.js
     ```
@@ -65,7 +68,7 @@ O Bruce Assistente se alimenta de duas fontes principais: Catálogo (Produtos) e
 *   **Ação**: Jogue aqui apresentações ou manuais técnicos complementares.
 *   **Motor de Extração**: O script conta com `pdf-parse` para leitura profunda de PDFs, `officeparser` para abrir os bytes de PPTX/DOCX nativamente no Node.js e suporta a ingestão de textos crus (TXT, MD, CSV).
 *   **Sincronizar**: Rode `node --env-file=.env scripts/ingest_docs.js`.
-*   **Automação (Cron)**: O cron do RAG verifica novos arquivos e os vetoriza a cada **24 horas**. Para ativar:
+*   **Automação (Cron)**: O cron do RAG verifica novos arquivos e os vetoriza **todas as noites (exatamente às 00:00)**, acompanhando o catálogo. Para ativar:
     ```bash
     node scripts/cron_rag.cjs
     ```
