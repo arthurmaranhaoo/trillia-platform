@@ -35,10 +35,16 @@ serve(async (req) => {
 
     if (history && history.length > 0) {
       // Chat with History (Map frontend payload to Gemini format)
-      const formattedHistory = history.map((msg: any) => ({
+      let formattedHistory = history.map((msg: any) => ({
         role: msg.role === 'user' ? 'user' : 'model',
         parts: [{ text: msg.text }]
       }));
+      
+      // Gemini API strict rule: The first message in history MUST be from a 'user'.
+      // If our UI sends the default greeting first, we must remove it from the array.
+      while (formattedHistory.length > 0 && formattedHistory[0].role === 'model') {
+        formattedHistory.shift();
+      }
       
       const chat = model.startChat({ history: formattedHistory });
       const result = await chat.sendMessage(message);
