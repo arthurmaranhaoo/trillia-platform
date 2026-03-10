@@ -29,3 +29,24 @@ Para evitar futuras quebras em cascata pelo time de engenharia, detalhamos abaix
 
 ---
 **Status Atual**: Repositório estabilizado, pipelines blindados e `sync_all.js` automatizado. Nenhuma anomalia detectada atualmente.
+
+## 🛡️ Políticas de Segurança e Preços (Security Hardening)
+
+O projeto passou por um processo de hardening, mas com ressalvas operacionais importantes.
+
+### Vulnerabilidades Mapeadas
+
+| Vulnerabilidade | Status | Situação Técnica |
+| :--- | :--- | :--- |
+| **Exposição de Chaves de API** | **PARCIALMENTE RESOLVIDO** | As chamadas de Chat ao Gemini passam pela **Edge Function** (`chat-proxy`). Contudo, o módulo de **Embeddings** no `App.tsx` continua exposto rodando Client-Side via `VITE_GEMINI_API_KEY`. (Requer migração para Edge). |
+| **Banco de Dados Aberto** | **RESOLVIDO** | O **Row Level Security (RLS)** foi habilitado para todas as tabelas. Implementamos políticas que permitem `SELECT` público apenas onde necessário, restringindo edições para o `service_role`. |
+| **Injeção de Prompt** | **RESOLVIDO** | Camada de **Prompt Guard** implementada no frontend e na Edge Function, bloqueando tentativas de desviar o Bruce de sua função. |
+| **Privacidade de Feedback** | **RESOLVIDO** | Feedbacks agora são `insert-only` para o público; ninguém consegue ler o feedback de outros usuários sem permissão de admin. |
+
+### 📅 Histórico de Preços API & Referência (Março 2026)
+Conforme documentado durante o desenvolvimento, os custos de infraestrutura de inteligência artificial são:
+- **Gemini 2.5 Flash**: ~$0.075/1M tokens (Input) \| ~$0.30/1M tokens (Output)
+- **Gemini Embedding 001**: ~$0.15/1M tokens (Input)
+- **Referência Oficial**: [Google AI Pricing](https://ai.google.dev/pricing)
+
+*Nota: O monitoramento de logs via Supabase Dashboard deve ocorrer regularmente para detectar acessos anômalos.*
