@@ -89,6 +89,10 @@ O "cérebro" da plataforma utiliza o estado da arte em Large Language Models (LL
     - Formatação de respostas em Markdown.
     - Personalidade amigável e técnica ("Assistente de Curadoria").
 - **Embeddings**: Modelo `gemini-embedding-001` para transformar textos técnicos da planilha e de documentos (PDF, PPTX, TXT) em vetores matemáticos de alta dimensão.
+    - **Custo**: ~$0.15 por 1 milhão de tokens de input (sem custo de output).
+- **Referência de Preços**:
+    - *Valores documentados em Março de 2026.*
+    - Para atualizações em tempo real, consulte: [Google AI Pricing](https://ai.google.dev/pricing)
 
 ---
 
