@@ -62,7 +62,19 @@ begin
 end;
 $$;
 
--- Desabilitar RLS para facilitar o teste inicial (Opcional, mas recomendado para o Lab)
-alter table products disable row level security;
-alter table documents disable row level security;
-alter table feedbacks disable row level security;
+-- 6. Habilitar RLS e Definir Políticas de Segurança
+alter table products enable row level security;
+alter table documents enable row level security;
+alter table feedbacks enable row level security;
+
+-- Políticas para PRODUTOS (Público pode ver, apenas admin pode editar)
+create policy "Produtos visíveis para todos" on products for select using (true);
+create policy "Apenas admins editam produtos" on products for all using (auth.role() = 'service_role');
+
+-- Políticas para DOCUMENTOS/RAG (Público pode ver, apenas admin pode editar)
+create policy "Documentos visíveis para todos" on documents for select using (true);
+create policy "Apenas admins editam documentos" on documents for all using (auth.role() = 'service_role');
+
+-- Políticas para FEEDBACKS (Público pode enviar, ninguém visualiza publicamente)
+create policy "Qualquer um pode enviar feedback" on feedbacks for insert with check (true);
+create policy "Apenas admins visualizam feedbacks" on feedbacks for select using (auth.role() = 'service_role');
