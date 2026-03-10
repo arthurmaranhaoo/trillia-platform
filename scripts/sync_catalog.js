@@ -21,10 +21,14 @@ if (fs.existsSync(envPath)) {
 }
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error("Error: Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables.");
+  console.error("Error: Missing SUPABASE_URL or SUPABASE_KEY environment variables.");
+  console.log("Environment detected:", { 
+    supabaseUrl: supabaseUrl ? 'Set' : 'Missing', 
+    supabaseKey: supabaseKey ? 'Set' : 'Missing' 
+  });
   process.exit(1);
 }
 
