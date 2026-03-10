@@ -137,12 +137,12 @@ PREÇO: ${pricingText}
     }
     
     console.log(`[${new Date().toISOString()}] Sync complete! Successfully synchronized ${successCount} products.`);
-    console.log("Waiting 30 minutes until next sync...");
+    console.log("Aguardando 24 horas até a próxima sincronização programada...");
   } catch (err) {
     console.error("Error during sync process:", err.message);
   }
 }
 
-// Run immediately, then every 30 minutes (1,800,000 ms)
+// Run immediately, then every 24 hours (86,400,000 ms)
 performSync();
-setInterval(performSync, 30 * 60 * 1000);
+setInterval(performSync, 24 * 60 * 60 * 1000);
