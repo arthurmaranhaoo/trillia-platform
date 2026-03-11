@@ -138,6 +138,8 @@ O projeto inova ao utilizar o **Excel como fonte primária de verdade**, facilit
     - **Dynamic Indexing**: Processam **todas as colunas** presentes no Excel de forma dinâmica. Não há limite de campos; o Bruce aprende qualquer novo campo adicionado à planilha.
     - **Embedding**: Geram vetores atômicos para cada produto usando Google AI.
     - **Atomic Update**: Atualizam o Supabase (Relacional + Vector) em um único fluxo.
+    - **Rigor Financeiro**: Bloqueio sistêmico que impede alucinação de preços; campos vazios são mapeados como "Sob Consulta".
+    - **Ofertas Simplificadas**: Otimização do display no modal para usar `ofertas_nomes`, garantindo uma interface limpa e focada.
 - **Colunas da Planilha**: Suporta todas as colunas dinamicamente (SKU, Nome, Descrição, Squad, Responsável, Email, Mercado, Pricing, etc.).
 - **Cron Jobs**: Sistema de sincronização agendada para manter o Bruce sempre atualizado com o `catalog.xlsx`.
 

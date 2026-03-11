@@ -43,7 +43,8 @@ async function syncAll() {
 
   // 1. Wipe everything to avoid duplicates
   console.log("  🧹 Clearing old data...");
-  await supabase.from('documents').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  // Use gt(id, 0) for bigint/serial id column
+  await supabase.from('documents').delete().gt('id', 0);
   await supabase.from('products').delete().neq('sku', '');
 
   // --- PART A: SYNC CATALOG ---
@@ -68,9 +69,11 @@ async function syncAll() {
         pricing: cleanValue(row.pricing),
         problem: cleanValue(row.problem),
         enxoval_link: cleanValue(row.enxoval_link),
-        useCases: row.use_cases ? row.use_cases.split(',').map(i => i.trim()) : [],
-        solutions: row.technical_solution ? row.technical_solution.split(',').map(i => i.trim()) : [],
-        tech: row.tech_stack ? row.tech_stack.split(',').map(i => i.trim()) : []
+        useCases: row.use_cases ? String(row.use_cases).split(',').map(i => i.trim()) : [],
+        solutions: (row.technical_solution || row.technical_tech_stack) ? String(row.technical_solution || row.technical_tech_stack).split(',').map(i => i.trim()) : [],
+        tech: row.tech_stack ? String(row.tech_stack).split(',').map(i => i.trim()) : [],
+        ofertas: cleanValue(row.ofertas),
+        ofertas_nomes: cleanValue(row.ofertas_nomes)
       };
 
       const payload = {
@@ -85,17 +88,16 @@ async function syncAll() {
 
       await supabase.from('products').upsert(payload, { onConflict: 'sku' });
 
-      const ragContext = `
-PRODUTO: ${payload.name}
-SKU: ${payload.sku}
-CATEGORIA: ${payload.category}
-HORIZONTE: ${metadata.tag}
-DESCRIÇÃO: ${payload.description}
-PROBLEMA: ${metadata.problem}
-CASOS DE USO: ${metadata.useCases.join(', ')}
-SOLUÇÃO TÉCNICA: ${metadata.solutions.join(', ')}
-TECNOLOGIAS: ${metadata.tech.join(', ')}
-      `.trim();
+      // Build RAG context dynamically from ALL fields in the row
+      let ragContext = `DADOS DO PRODUTO (SKU: ${skuStr}):\n`;
+      for (const [key, value] of Object.entries(row)) {
+          if (value !== undefined && value !== null && value !== '') {
+              ragContext += `${key.toUpperCase()}: ${value}\n`;
+          } else if (key.toLowerCase() === 'pricing' || key.toLowerCase() === 'price') {
+              ragContext += `${key.toUpperCase()}: Sob Consulta / Não informado (Consulte o Responsável)\n`;
+          }
+      }
+      ragContext = ragContext.trim();
 
       const result = await embedModel.embedContent(ragContext);
       await supabase.from('documents').insert({

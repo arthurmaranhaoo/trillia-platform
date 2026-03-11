@@ -698,25 +698,25 @@ const CatalogView = () => {
             id: item.id,
             sku: item.sku,
             title: item.name,
-            tag: item.metadata?.tag || 'H1',
-            category: item.category || 'Geral',
+            tag: item.metadata?.tag || '',
+            category: item.category || '',
             desc: item.description || '',
-            owner: item.metadata?.owner || 'Time Trillia',
-            owner_email: item.metadata?.owner_email || 'contato@trillia.com.br',
-            squad: item.metadata?.squad || 'Geral',
-            revenue: item.metadata?.revenue || 'N/A',
-            bu: item.metadata?.bu || (item.category || 'Geral'),
-            mercado: item.metadata?.mercado || 'B2B',
-            horizonte: item.metadata?.horizonte || 'H1',
-            pricing: item.metadata?.pricing || 'Sob Consulta',
-            problem: item.metadata?.problem || item.description || 'Problema principal',
-            useCases: item.metadata?.useCases || ['Automatização de fluxos', 'Redução de custos', 'Ganho de eficiência'],
-            solutions: item.metadata?.solutions || ['Implementação via API', 'Módulos independentes', 'Plataforma em nuvem'],
-            tech: item.metadata?.tech || ['React', 'Node.js', 'Supabase'],
+            owner: item.metadata?.owner || '',
+            owner_email: item.metadata?.owner_email || '',
+            squad: item.metadata?.squad || '',
+            revenue: item.metadata?.revenue || '',
+            bu: item.metadata?.bu || (item.category || ''),
+            mercado: item.metadata?.mercado || '',
+            horizonte: item.metadata?.horizonte || item.metadata?.tag || '',
+            pricing: item.metadata?.pricing || '',
+            problem: item.metadata?.problem || '',
+            useCases: item.metadata?.useCases || [],
+            solutions: item.metadata?.solutions || [],
+            tech: item.metadata?.tech || [],
             enxoval_link: item.metadata?.enxoval_link || null,
             ofertas: item.metadata?.ofertas || '',
             ofertas_nomes: item.metadata?.ofertas_nomes || '',
-            price: item.price ? `R$ ${item.price}` : 'Sob Consulta',
+            price: item.price ? `R$ ${item.price}` : '',
             stock: item.stock_status
         }));
         setProducts(mapped);
@@ -739,7 +739,7 @@ const CatalogView = () => {
     const matchesBU = filters.bu === 'Todas' || p.bu === filters.bu;
     const matchesMercado = filters.mercado === 'Todos' || p.mercado === filters.mercado;
     const matchesHorizonte = filters.horizonte === 'Todos' || p.horizonte === filters.horizonte;
-    const matchesSquad = filters.squad === 'Todas' || p.squad === filters.squad;
+    const matchesSquad = filters.squad === 'Todas' || (p.squad || 'Geral') === filters.squad;
     const matchesResponsavel = filters.responsavel === 'Todos' || p.owner === filters.responsavel;
     
     return matchesSearch && matchesBU && matchesMercado && matchesHorizonte && matchesSquad && matchesResponsavel;
@@ -1226,19 +1226,19 @@ const CatalogView = () => {
                         <div className="h-[2px] w-12 bg-primary" />
                         <p className="text-[11px] font-mono text-primary font-bold tracking-widest uppercase">PROBLEMA E SOLUÇÃO</p>
                       </div>
-                      <p className="text-2xl font-black text-ink/80 leading-tight">{selectedProduct.problem}</p>
+                      <p className="text-2xl font-black text-ink/80 leading-tight">{selectedProduct.problem || 'Não informado.'}</p>
                     </section>
 
-                    {selectedProduct.ofertas && (
+                    {selectedProduct.ofertas_nomes && (
                       <section className="space-y-6">
                         <div className="flex items-center gap-4">
                           <div className="h-[2px] w-12 bg-accent-green" />
                           <p className="text-[11px] font-mono text-accent-green font-bold tracking-widest uppercase">OFERTAS DISPONÍVEIS</p>
                         </div>
                         <div className="grid grid-cols-1 gap-4">
-                          {selectedProduct.ofertas.split(',').map((o: string, idx: number) => (
+                          {selectedProduct.ofertas_nomes.split(',').map((o: string) => o.trim()).filter((o: string) => o !== '').map((o: string, idx: number) => (
                             <div key={idx} className="p-6 bg-surface border border-ink/5 rounded-2xl space-y-2 hover:border-accent-green/30 transition-all">
-                              <p className="text-base font-bold text-ink/80 leading-snug">{o.trim()}</p>
+                              <p className="text-base font-bold text-ink/80 leading-snug">{o}</p>
                             </div>
                           ))}
                         </div>
@@ -1288,32 +1288,42 @@ const CatalogView = () => {
                         <p className="text-[11px] font-mono text-primary font-bold tracking-widest uppercase">GOVERNANÇA</p>
                       </div>
                       <div className="space-y-4">
-                        <div className="flex justify-between items-center py-3 border-b border-ink/5">
-                          <span className="text-[10px] font-mono text-ink/30 font-bold uppercase">BU</span>
-                          <span className="text-xs font-black uppercase">{selectedProduct.bu}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-3 border-b border-ink/5">
-                          <span className="text-[10px] font-mono text-ink/30 font-bold uppercase">MERCADO</span>
-                          <span className="text-xs font-black uppercase">{selectedProduct.mercado}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-3 border-b border-ink/5">
-                          <span className="text-[10px] font-mono text-ink/30 font-bold uppercase">RESPONSÁVEL</span>
-                          <span className="text-xs font-black uppercase">{selectedProduct.owner}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-3 border-b border-ink/5">
-                          <span className="text-[10px] font-mono text-ink/30 font-bold uppercase">E-MAIL</span>
-                          <span className="text-xs font-bold text-primary lowercase truncate">{selectedProduct.owner_email || 'contato@trillia.com.br'}</span>
-                        </div>
+                        {selectedProduct.bu && (
+                          <div className="flex justify-between items-center py-3 border-b border-ink/5">
+                            <span className="text-[10px] font-mono text-ink/30 font-bold uppercase">BU</span>
+                            <span className="text-xs font-black uppercase">{selectedProduct.bu}</span>
+                          </div>
+                        )}
+                        {selectedProduct.mercado && (
+                          <div className="flex justify-between items-center py-3 border-b border-ink/5">
+                            <span className="text-[10px] font-mono text-ink/30 font-bold uppercase">MERCADO</span>
+                            <span className="text-xs font-black uppercase">{selectedProduct.mercado}</span>
+                          </div>
+                        )}
+                        {selectedProduct.owner && (
+                          <div className="flex justify-between items-center py-3 border-b border-ink/5">
+                            <span className="text-[10px] font-mono text-ink/30 font-bold uppercase">RESPONSÁVEL</span>
+                            <span className="text-xs font-black uppercase">{selectedProduct.owner}</span>
+                          </div>
+                        )}
+                        {selectedProduct.owner_email && (
+                          <div className="flex justify-between items-center py-3 border-b border-ink/5">
+                            <span className="text-[10px] font-mono text-ink/30 font-bold uppercase">E-MAIL</span>
+                            <span className="text-xs font-bold text-primary lowercase truncate">{selectedProduct.owner_email}</span>
+                          </div>
+                        )}
                       </div>
                     </section>
 
-                    <section className="space-y-6">
-                      <p className="text-[11px] font-mono text-primary font-bold tracking-widest uppercase">// PRICING</p>
-                      <div className="p-6 bg-ink text-white rounded-2xl space-y-2">
-                        <p className="text-[10px] font-mono text-white/40 font-bold uppercase tracking-widest">MODELO DE NEGÓCIO</p>
-                        <p className="text-sm font-black uppercase tracking-tight">{selectedProduct.pricing}</p>
-                      </div>
-                    </section>
+                    {selectedProduct.pricing && (
+                      <section className="space-y-6">
+                        <p className="text-[11px] font-mono text-primary font-bold tracking-widest uppercase">// PRICING</p>
+                        <div className="p-6 bg-ink text-white rounded-2xl space-y-2">
+                          <p className="text-[10px] font-mono text-white/40 font-bold uppercase tracking-widest">MODELO DE NEGÓCIO</p>
+                          <p className="text-sm font-black uppercase tracking-tight">{selectedProduct.pricing}</p>
+                        </div>
+                      </section>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1485,7 +1495,7 @@ Consulta de Busca Otimizada:`;
       // 2. Perform similarity search in Supabase vector store
       const { data: documents, error } = await supabase.rpc('match_documents', {
         query_embedding: queryEmbedding,
-        match_threshold: 0.3, // Lowered threshold to ensure broad queries pull in as many products as possible
+        match_threshold: 0.2, // Lowered threshold to ensure broad queries pull in as many products as possible
         match_count: 150 // Capture the entire catalog if needed
       });
 
@@ -1530,10 +1540,11 @@ Se o usuário perguntar QUANTOS produtos existem NO TOTAL ou listar produtos, vo
 6. **CLARIFICAÇÃO**: Se a pergunta for vaga ou usar pronomes sem contexto claro, peça para o usuário especificar o produto.
 
 ### DIRETRIZES TÉCNICAS:
-1. **RIGOR METODOLÓGICO**: Ao responder sobre Horizontes (H1, H2, H3), detalhe as Sub-fases (ex: 3.1, 2.3). Cite: Definição, Portão de Entrada, Portão de Saída e Artefatos.
-2. **DEFINIÇÃO DE "PRODUTO"**: Refere-se EXCLUSIVAMENTE aos itens do catálogo comercializados (ex: MIH). Fases são "Horizontes".
+1. **RIGOR METODOLÓGICO**: Ao responder sobre Horizontes (H1, H2, H3), seja conciso. Só detalhe as Sub-fases (ex: 3.1, 2.3), Portões e Artefatos se o usuário pedir explicitamente para "detalhar a fase" ou "explicar o horizonte". Em consultas gerais de produto, foque apenas em citar qual é o Horizonte atual.
+2. **PROTOCOLO DE CATALOGAÇÃO**: NUNCA mencione SKUs ou nomes de produtos que não estejam EXPLÍCITAMENTE listados no contexto fornecido (Documentos/Excel). É proibido inventar códigos como "REC-001" ou similares. Todos os produtos oficiais começam com "TRL".
 3. **TABELAS OBRIGATÓRIAS**: Use tabelas Markdown para qualquer comparação de produtos ou listagem de sub-fases. Nunca use listas simples para comparações.
-4. **TOM PROFISSIONAL**: Seja direto, soberbo em conhecimento e termine sempre com: "Ajudo em algo mais?" (Sem emojis).
+4. **ESTRITA FIDELIDADE FINANCEIRA**: Se o campo 'PRICING' ou 'PRICE' não estiver no contexto ou estiver como 'Não informado', você está PROIBIDO de estimar, inventar ou sugerir qualquer valor (mesmo que baseado em outros produtos). Responda que a informação não está disponível e direcione para o Responsável.
+5. **TOM PROFISSIONAL**: Seja direto, soberbo em conhecimento e termine de forma natural, sem repetir frases automáticas como "Ajudo em algo mais?". (Sem emojis).
 
 Aqui está o contexto extraído dos documentos oficiais da Trillia para responder a esta pergunta:
 ${contextString}
